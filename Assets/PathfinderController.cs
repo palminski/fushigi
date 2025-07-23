@@ -6,28 +6,41 @@ using UnityEngine.Tilemaps;
 
 public class PathfinderController : MonoBehaviour
 {
-    // public PathfindingGrid grid;
+    // Pathfinder controller is a singleton object that handles the nodes representing tiles in the game. While its primary function is finding paths from one position to another, it 
+    // also handles functions related to getting information about the grid and nodes, such as returning a node from a position, or calculating the range that a unit can move.
+    public static PathfinderController Instance { get; private set; }
 
     //Combined From Pathfinding Grid
     public Tilemap walkableTilemap;
     public Tilemap hardTerrainTilemap; // This may end up being an array so that different tilemaps can have different harness values.
     private Dictionary<Vector3Int, Node> nodes;
 
-    // Start is called before the first frame update
-    // void Start()
-    // {
-    //     grid = GetComponent<PathfindingGrid>();
-    // }
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
         GenerateGrid();
     }
 
-    public List<Node> FindPath(Vector3Int startPosition, Vector3Int targetPosition)
+    // =======================================================================================================================================================================================
+
+    // Public Methods
+
+    // =======================================================================================================================================================================================
+
+    //Takes a starting and ending location and finds the shortest path between the two
+    public List<Node> FindPath(Vector3 startPosition, Vector3 targetPosition)
     {
-        Node startingNode = GetNode(startPosition);
-        Node targetNode = GetNode(targetPosition);
+        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
+        Vector3Int targetGridPosition = walkableTilemap.WorldToCell(targetPosition);
+
+        Node startingNode = GetNode(startGridPosition);
+        Node targetNode = GetNode(targetGridPosition);
 
         if (startingNode == null || targetNode == null || !targetNode.walkable)
         {
@@ -79,16 +92,17 @@ public class PathfinderController : MonoBehaviour
                 }
             }
         }
-
         return null;
     }
 
-    public List<Node> GetReachableNodes(Vector3Int startPosition, int range)
+    // Gets reachable nodes from a start position in a certain movement range taking into account each node's movement cost
+    public List<Node> GetReachableNodes(Vector3 startPosition, int range)
     {
+        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
         List<Node> reachable = new List<Node>();
 
-        var startingNode = GetNode(startPosition);
-        if (startPosition == null) return reachable;
+        var startingNode = GetNode(startGridPosition);
+        if (startGridPosition == null) return reachable;
 
         Dictionary<Node, int> costSoFar = new Dictionary<Node, int>();
         Queue<Node> frontier = new Queue<Node>();
@@ -113,32 +127,28 @@ public class PathfinderController : MonoBehaviour
                 }
             }
         }
-
         return reachable;
     }
 
-    private List<Node> RetracePath(Node startNode, Node endNode)
+    // Takes a path and an allowed movement range and returns the same path trimmed to not exceed said movement range
+    public List<Node> TrimPathToMovementRange(List<Node> fullPath, int movementRange)
     {
-        List<Node> path = new List<Node>();
-        Node current = endNode;
+        List<Node> trimmedPath = new List<Node>();
+        float currentCost = 0f;
 
-        while (current != startNode)
+        foreach (Node node in fullPath)
         {
-            path.Add(current);
-            current = current.parent;
+            currentCost += node.movementCost;
+            if (currentCost > movementRange)
+            {
+                break;
+            }
+            trimmedPath.Add(node);
         }
-
-        path.Reverse();
-        return path;
+        return trimmedPath;
     }
 
-    private int GetDistance(Node a, Node b)
-    {
-        int dx = Mathf.Abs(a.gridPosition.x - b.gridPosition.x);
-        int dy = Mathf.Abs(a.gridPosition.y - b.gridPosition.y);
-        return dx + dy;
-    }
-
+    // Returns all nodes neighboring a given node
     public List<Node> GetNeighbors(Node node)
     {
         List<Node> neighbors = new List<Node>();
@@ -163,6 +173,7 @@ public class PathfinderController : MonoBehaviour
         return neighbors;
     }
 
+    // Returns the movement cost of a path
     public float GetPathCost(List<Node> path)
     {
         float cost = 0;
@@ -173,24 +184,42 @@ public class PathfinderController : MonoBehaviour
         return cost;
     }
 
-    public List<Node> TrimPathToMovementRange(List<Node> fullPath, int movementRange)
+    //Given a position returns the node associated with that position, essentially converting coordinates into a node object
+    public Node GetNode(Vector3 position)
     {
-        List<Node> trimmedPath = new List<Node>();
-        float currentCost = 0f;
-
-        foreach (Node node in fullPath)
-        {
-            currentCost += node.movementCost;
-            if (currentCost > movementRange)
-            {
-                break;
-            }
-            trimmedPath.Add(node);
-        }
-        return trimmedPath;
+        Vector3Int convertedPosition = walkableTilemap.WorldToCell(position);
+        return nodes.TryGetValue(convertedPosition, out var node) ? node : null;
     }
 
-    void GenerateGrid()
+
+    // =======================================================================================================================================================================================
+
+    // Internal Methods
+
+    // =======================================================================================================================================================================================
+    private List<Node> RetracePath(Node startNode, Node endNode)
+    {
+        List<Node> path = new List<Node>();
+        Node current = endNode;
+
+        while (current != startNode)
+        {
+            path.Add(current);
+            current = current.parent;
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+    private int GetDistance(Node a, Node b)
+    {
+        int dx = Mathf.Abs(a.gridPosition.x - b.gridPosition.x);
+        int dy = Mathf.Abs(a.gridPosition.y - b.gridPosition.y);
+        return dx + dy;
+    }
+
+    private void GenerateGrid()
     {
         walkableTilemap.CompressBounds();
         BoundsInt bounds = walkableTilemap.cellBounds;
@@ -223,10 +252,7 @@ public class PathfinderController : MonoBehaviour
         }
     }
 
-    public Node GetNode(Vector3Int position)
-    {
-        return nodes.TryGetValue(position, out var node) ? node : null;
-    }
+    
 
     public IEnumerable<Node> GetAllNodes() => nodes.Values;
 

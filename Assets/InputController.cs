@@ -14,7 +14,6 @@ public class InputController : MonoBehaviour
     public Mover currentMover;
 
     public int moveStat = 8;
-    private PathfinderController pathfinder;
     public Transform reticalTransform;
     public LineRenderer lineRenderer;
     private GameInput inputActions;
@@ -22,7 +21,6 @@ public class InputController : MonoBehaviour
     void Awake()
     {
         inputActions = new GameInput();
-        pathfinder = GetComponent<PathfinderController>();
     }
 
     void OnEnable()
@@ -41,22 +39,23 @@ public class InputController : MonoBehaviour
     {
         Vector2 screenPosition = Mouse.current.position.ReadValue();
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
+
         if (GameController.Instance.gamePhase == GamePhase.Enemy) return;
+
         if (currentMover)
         {
-
             Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
             TileBase tile = tilemap.GetTile(gridPosition);
 
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
             bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
-            
+
             if (validTile && tile != null)
             {
                 Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
                 Vector3Int targetGrid = tilemap.WorldToCell(worldPosition);
 
-                List<Node> path = pathfinder.FindPath(playerGrid, targetGrid);
+                List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid);
                 if (path != null && path.Count > 0 && path.Count <= moveStat)
                 {
                     overlayTilemap.ClearAllTiles();
@@ -95,14 +94,14 @@ public class InputController : MonoBehaviour
         if (currentMover)
         {
             Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-            List<Node> path = pathfinder.FindPath(playerGrid, gridPosition); //Path to the tile 
+            List<Node> path = PathfinderController.Instance.FindPath(playerGrid, gridPosition); //Path to the tile 
 
             if (!currentMover.isMoving)
             {
                 ShowMovementRange();
             }
 
-            if (tile != null && !currentMover.isMoving && path != null && pathfinder.GetPathCost(path) <= moveStat)
+            if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path) <= moveStat)
             {
                 if (reticalTransform.gameObject.activeSelf == false) DrawPath(gridPosition);
                 reticalTransform.gameObject.SetActive(true);
@@ -134,10 +133,10 @@ public class InputController : MonoBehaviour
 
 
 
-        List<Node> path = pathfinder.FindPath(playerGrid, targetGrid);
+        List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid);
 
 
-        if (path == null || path.Count == 0 || pathfinder.GetPathCost(path) > moveStat)
+        if (path == null || path.Count == 0 || PathfinderController.Instance.GetPathCost(path) > moveStat)
         {
             ClearLine();
             return;
@@ -156,15 +155,15 @@ public class InputController : MonoBehaviour
         overlayTilemap.ClearAllTiles();
 
         Vector3Int playerPosition = tilemap.WorldToCell(currentMover.transform.position);
-        List<Node> reachable = pathfinder.GetReachableNodes(playerPosition, moveStat);
+        List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerPosition, moveStat);
 
-        foreach (Node node in pathfinder.GetAllNodes())
+        foreach (Node node in PathfinderController.Instance.GetAllNodes())
         {
             if (!node.walkable) continue;
             if (reachable.Contains(node))
             {
                 overlayTilemap.SetTile(node.gridPosition, greenOverlay);
-                foreach (Node neighbor in pathfinder.GetNeighbors(node))
+                foreach (Node neighbor in PathfinderController.Instance.GetNeighbors(node))
                 {
                     if (!reachable.Contains(neighbor))
                     {

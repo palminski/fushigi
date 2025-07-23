@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 public class EnemyUnit : MapObject
 {
     public Tilemap tilemap;
-    public PathfinderController pathfinder;
 
     [HideInInspector] public Mover mover;
 
@@ -32,30 +33,43 @@ public class EnemyUnit : MapObject
 
     public void PerformTurnAction()
     {
-        var playerUnits = FindObjectsOfType<PlayerUnit>();
-
-        List<Node> shortestPath = null;
-
-        foreach (PlayerUnit playerUnit in playerUnits)
+        MapManager.Instance.RefreshMap();
+        Node targetNode = FindTargetTile();
+        if (targetNode != null)
         {
-            Vector2 screenPosition = playerUnit.transform.position;
-            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
-            Vector3Int targetGrid = tilemap.WorldToCell(screenPosition);
+            List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition);
+            mover.StartMoving(path);
 
-            // Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
-            // TileBase tile = tilemap.GetTile(gridPosition);
-            Vector3Int thisGrid = tilemap.WorldToCell(mover.transform.position);
+        }
+    }
 
-            List<Node> path = pathfinder.FindPath(thisGrid, targetGrid);
-            if (shortestPath == null || shortestPath.Count > path.Count)
+    private Node FindTargetTile()
+    {
+        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, 8); //Starting Range
+        var playerUnits = FindObjectsOfType<PlayerUnit>();
+        List<Node> shortestPath = null;
+        Node targetNode = null;
+        foreach (Node reachableNode in reachableNodes)
+        {
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(reachableNode.gridPosition);
+            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
+            if (!validTile) continue;
+            foreach (PlayerUnit playerUnit in playerUnits)
             {
-                shortestPath = path;
+
+                Vector3 targetGridPoition = playerUnit.transform.position;
+                Vector3 thisGridPosition = reachableNode.gridPosition;
+
+                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition);
+
+                if (shortestPath == null || shortestPath.Count > path.Count)
+                {
+                    shortestPath = path;
+                    targetNode = reachableNode;
+                }
             }
         }
-        if (shortestPath != null)
-        {
-            mover.StartMoving(pathfinder.TrimPathToMovementRange(shortestPath, 8));
-        }
+        return targetNode;
     }
 
     // public void SetInactive()
