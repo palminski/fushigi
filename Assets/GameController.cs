@@ -44,6 +44,21 @@ public class GameController : MonoBehaviour
 
     public void PerformEnemyPhase()
     {
+
+        StartCoroutine(MoveEnemies());
+    }
+
+    private IEnumerator MoveEnemies()
+    {
+        var enemyUnits = FindObjectsOfType<EnemyUnit>();
+        foreach (EnemyUnit enemyUnit in enemyUnits)
+        {
+            enemyUnit.PerformTurnAction();
+            while (enemyUnit.mover.isMoving)
+            {
+                yield return null;            
+            }
+        }
         ChangePhase();
     }
 

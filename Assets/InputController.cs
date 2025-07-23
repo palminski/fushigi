@@ -14,7 +14,7 @@ public class InputController : MonoBehaviour
     public Mover currentMover;
 
     public int moveStat = 8;
-    private Pathfinder pathfinder;
+    private PathfinderController pathfinder;
     public Transform reticalTransform;
     public LineRenderer lineRenderer;
     private GameInput inputActions;
@@ -22,7 +22,7 @@ public class InputController : MonoBehaviour
     void Awake()
     {
         inputActions = new GameInput();
-        pathfinder = GetComponent<Pathfinder>();
+        pathfinder = GetComponent<PathfinderController>();
     }
 
     void OnEnable()
@@ -41,7 +41,7 @@ public class InputController : MonoBehaviour
     {
         Vector2 screenPosition = Mouse.current.position.ReadValue();
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
-
+        if (GameController.Instance.gamePhase == GamePhase.Enemy) return;
         if (currentMover)
         {
 
@@ -158,7 +158,7 @@ public class InputController : MonoBehaviour
         Vector3Int playerPosition = tilemap.WorldToCell(currentMover.transform.position);
         List<Node> reachable = pathfinder.GetReachableNodes(playerPosition, moveStat);
 
-        foreach (Node node in pathfinder.grid.GetAllNodes())
+        foreach (Node node in pathfinder.GetAllNodes())
         {
             if (!node.walkable) continue;
             if (reachable.Contains(node))

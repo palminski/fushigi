@@ -55,7 +55,7 @@ public class Mover : MonoBehaviour
                 transform.position = targetPosition;
             }
             isMoving = false;
-            playerUnit.SetInactive();
+            if (playerUnit) playerUnit.SetInactive();
         }
     }
 }
