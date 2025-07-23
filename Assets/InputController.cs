@@ -48,8 +48,10 @@ public class InputController : MonoBehaviour
             Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
             TileBase tile = tilemap.GetTile(gridPosition);
 
-            Debug.Log($"{gridPosition} => {(tile != null ? "[Valid Floor]" : "[Wall]")}");
-            if (tile != null)
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
+            
+            if (validTile && tile != null)
             {
                 Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
                 Vector3Int targetGrid = tilemap.WorldToCell(worldPosition);
@@ -70,7 +72,7 @@ public class InputController : MonoBehaviour
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
             PlayerUnit playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
 
-            if (playerUnit != null)
+            if (playerUnit != null && playerUnit.canAct)
             {
                 Mover mover = playerUnit.mover;
                 if (mover != null)

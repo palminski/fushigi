@@ -12,6 +12,13 @@ public class Mover : MonoBehaviour
 
     private Vector3 currentFinalTarget;
 
+    private PlayerUnit playerUnit;
+
+    void Awake()
+    {
+        playerUnit = GetComponent<PlayerUnit>();
+    }
+
     public void StartMoving(List<Node> path, int moveStat = 8)
     {
         if (!isMoving)
@@ -48,6 +55,7 @@ public class Mover : MonoBehaviour
                 transform.position = targetPosition;
             }
             isMoving = false;
+            playerUnit.SetInactive();
         }
     }
 }
