@@ -52,7 +52,7 @@ public class EnemyUnit : MapObject
         foreach (Node reachableNode in reachableNodes)
         {
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(reachableNode.gridPosition);
-            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
+            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit enemyUnit != this);
             if (!validTile) continue;
             foreach (PlayerUnit playerUnit in playerUnits)
             {
@@ -60,7 +60,7 @@ public class EnemyUnit : MapObject
                 Vector3 targetGridPoition = playerUnit.transform.position;
                 Vector3 thisGridPosition = reachableNode.gridPosition;
 
-                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition);
+                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition, true);
 
                 if (shortestPath == null || shortestPath.Count > path.Count)
                 {
