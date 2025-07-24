@@ -24,6 +24,11 @@ public class PathfinderController : MonoBehaviour
             return;
         }
         Instance = this;
+        // GenerateGrid();
+    }
+
+    void Start()
+    {
         GenerateGrid();
     }
 
@@ -34,17 +39,18 @@ public class PathfinderController : MonoBehaviour
     // =======================================================================================================================================================================================
 
     //Takes a starting and ending location and finds the shortest path between the two
-    public List<Node> FindPath(Vector3 startPosition, Vector3 targetPosition)
+    public List<Node> FindPath(Vector3 startPosition, Vector3 targetPosition, bool allowIllegalTarget = false)
     {
+        //Note to self, maybe double check the allowIllegialTargetFlag
+        GenerateGrid();
         Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
         Vector3Int targetGridPosition = walkableTilemap.WorldToCell(targetPosition);
 
         Node startingNode = GetNode(startGridPosition);
         Node targetNode = GetNode(targetGridPosition);
 
-        if (startingNode == null || targetNode == null || !targetNode.walkable)
+        if (startingNode == null || targetNode == null || (!allowIllegalTarget && !targetNode.walkable))
         {
-
             return null;
         }
 
@@ -76,7 +82,7 @@ public class PathfinderController : MonoBehaviour
 
             foreach (Node neighbor in GetNeighbors(current))
             {
-                if (!neighbor.walkable || closedSet.Contains(neighbor)) continue;
+                if ((neighbor != targetNode && !neighbor.walkable) || closedSet.Contains(neighbor)) continue;
                 int tenativeGCost = current.gCost + neighbor.movementCost;
 
                 if (tenativeGCost < neighbor.gCost)
@@ -98,6 +104,7 @@ public class PathfinderController : MonoBehaviour
     // Gets reachable nodes from a start position in a certain movement range taking into account each node's movement cost
     public List<Node> GetReachableNodes(Vector3 startPosition, int range)
     {
+        GenerateGrid();
         Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
         List<Node> reachable = new List<Node>();
 
@@ -219,7 +226,7 @@ public class PathfinderController : MonoBehaviour
         return dx + dy;
     }
 
-    private void GenerateGrid()
+    public void GenerateGrid()
     {
         walkableTilemap.CompressBounds();
         BoundsInt bounds = walkableTilemap.cellBounds;
@@ -236,7 +243,16 @@ public class PathfinderController : MonoBehaviour
             {
                 Vector3Int position = new Vector3Int(origin.x + x, origin.y + y, 0);
 
-                bool walkable = walkableTilemap.HasTile(position);
+                var objectsAtTile = MapManager.Instance.GetObjectsAt(position);
+
+                bool walkable = false;
+                if (walkableTilemap.HasTile(position)
+                    && !(GameController.Instance.gamePhase == GamePhase.Player && objectsAtTile.Any(obj => obj is EnemyUnit))
+                    && !(GameController.Instance.gamePhase == GamePhase.Enemy && objectsAtTile.Any(obj => obj is PlayerUnit))
+                    )
+                {
+                    walkable = true;
+                }
                 if (walkable)
                 {
                     int movementCost = hardTerrainTilemap.HasTile(position) ? 2 : 1;
@@ -252,7 +268,7 @@ public class PathfinderController : MonoBehaviour
         }
     }
 
-    
+
 
     public IEnumerable<Node> GetAllNodes() => nodes.Values;
 

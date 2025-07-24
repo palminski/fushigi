@@ -60,7 +60,7 @@ public class EnemyUnit : MapObject
                 Vector3 targetGridPoition = playerUnit.transform.position;
                 Vector3 thisGridPosition = reachableNode.gridPosition;
 
-                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition);
+                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition, true);
 
                 if (shortestPath == null || shortestPath.Count > path.Count)
                 {
