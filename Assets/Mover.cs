@@ -58,4 +58,9 @@ public class Mover : MonoBehaviour
             if (playerUnit) playerUnit.SetInactive();
         }
     }
+
+    public void DeactivatePlayer()
+    {
+        if (playerUnit) playerUnit.SetInactive();
+    }
 }

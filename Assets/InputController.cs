@@ -48,12 +48,21 @@ public class InputController : MonoBehaviour
             TileBase tile = tilemap.GetTile(gridPosition);
 
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
 
+            Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
+            Vector3Int targetGrid = tilemap.WorldToCell(worldPosition);
+
+            if (playerGrid == targetGrid)
+            {
+                currentMover.DeactivatePlayer();
+                currentMover = null;
+                overlayTilemap.ClearAllTiles();
+                ClearLine();
+            }
+
+            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
             if (validTile && tile != null)
             {
-                Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-                Vector3Int targetGrid = tilemap.WorldToCell(worldPosition);
 
                 List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid);
                 if (path != null && path.Count > 0 && path.Count <= moveStat)

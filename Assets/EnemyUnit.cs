@@ -52,7 +52,7 @@ public class EnemyUnit : MapObject
         foreach (Node reachableNode in reachableNodes)
         {
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(reachableNode.gridPosition);
-            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
+            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit enemyUnit != this);
             if (!validTile) continue;
             foreach (PlayerUnit playerUnit in playerUnits)
             {
