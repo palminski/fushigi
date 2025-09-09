@@ -34,7 +34,7 @@ public class EnemyUnit : MapObject
 
     }
 
-    public void PerformTurnAction()
+    public void PerformTurnMovement()
     {
         MapManager.Instance.RefreshMap();
         Node targetNode = FindTargetTile();
@@ -42,13 +42,29 @@ public class EnemyUnit : MapObject
         {
             List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition);
             mover.StartMoving(path);
+        }
+    }
 
+    public void PerformTurnAction()
+    {
+        List<Node> attackableNodes = PathfinderController.Instance.GetAttackableTiles(mover.transform.position); //Attack Range
+        
+        PlayerUnit playerUnit = null;
+        foreach (Node attackableNode in attackableNodes)
+        {
+            print(attackableNode.gridPosition);
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(attackableNode.gridPosition);
+            playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault() ?? playerUnit;
+        }
+        if (playerUnit != null)
+        {
+            AttackUnit(playerUnit);
         }
     }
 
     private Node FindTargetTile()
     {
-        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement); //Starting Range
+        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement);
         var playerUnits = FindObjectsOfType<PlayerUnit>();
         List<Node> shortestPath = null;
         Node targetNode = null;
@@ -73,6 +89,12 @@ public class EnemyUnit : MapObject
             }
         }
         return targetNode;
+    }
+
+    public void AttackUnit(PlayerUnit playerUnit)
+    {
+        int damage = Mathf.Abs(playerUnit.unitAttributes.defence - unitAttributes.strength); // Eventually this will also have weapon power built into it
+        playerUnit.unitAttributes.Damage(damage);
     }
 
     // public void SetInactive()

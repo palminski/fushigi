@@ -12691,7 +12691,6 @@ MonoBehaviour:
   greenOverlay: {fileID: 11400000, guid: a4195d0fae0f6d24dadd40f561497839, type: 2}
   redOverlay: {fileID: 11400000, guid: 5d1f4f4369108024295b7cb92ee6e11f, type: 2}
   currentMover: {fileID: 0}
-  moveStat: 16
   reticalTransform: {fileID: 1478333820}
   lineRenderer: {fileID: 1564213305}
 --- !u!114 &965667714
@@ -12733,6 +12732,7 @@ GameObject:
   - component: {fileID: 966585046}
   - component: {fileID: 966585045}
   - component: {fileID: 966585049}
+  - component: {fileID: 966585050}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -12800,6 +12800,7 @@ MonoBehaviour:
   moveSpeed: 25
   tilemap: {fileID: 582902904}
   isMoving: 0
+  playerUnit: {fileID: 0}
 --- !u!212 &966585047
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -12882,6 +12883,25 @@ MonoBehaviour:
   tilemap: {fileID: 582902904}
   mover: {fileID: 0}
   canAct: 1
+--- !u!114 &966585050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966585043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fcecbe4d1f62843a2f37eca405f1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHealth: 0
+  health: 1
+  strength: 8
+  speed: 1
+  defence: 1
+  magic: 1
+  movement: 8
 --- !u!1 &1478333817
 GameObject:
   m_ObjectHideFlags: 0
@@ -31046,6 +31066,7 @@ GameObject:
   - component: {fileID: 1557982980}
   - component: {fileID: 1557982981}
   - component: {fileID: 1557982982}
+  - component: {fileID: 1557982983}
   m_Layer: 0
   m_Name: RABIT
   m_TagString: Untagged
@@ -31135,6 +31156,7 @@ MonoBehaviour:
   moveSpeed: 25
   tilemap: {fileID: 582902904}
   isMoving: 0
+  playerUnit: {fileID: 0}
 --- !u!61 &1557982981
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -31194,6 +31216,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mover: {fileID: 1557982980}
   canAct: 1
+  unitAttributes: {fileID: 0}
+--- !u!114 &1557982983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557982977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fcecbe4d1f62843a2f37eca405f1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHealth: 0
+  health: 20
+  strength: 1
+  speed: 1
+  defence: 1
+  magic: 1
+  movement: 12
 --- !u!1 &1564213303
 GameObject:
   m_ObjectHideFlags: 0
@@ -31343,6 +31385,7 @@ GameObject:
   - component: {fileID: 1621375041}
   - component: {fileID: 1621375040}
   - component: {fileID: 1621375039}
+  - component: {fileID: 1621375044}
   m_Layer: 0
   m_Name: RABIT (1)
   m_TagString: Untagged
@@ -31364,6 +31407,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mover: {fileID: 1621375041}
   canAct: 1
+  unitAttributes: {fileID: 0}
 --- !u!61 &1621375040
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -31424,6 +31468,7 @@ MonoBehaviour:
   moveSpeed: 25
   tilemap: {fileID: 582902904}
   isMoving: 0
+  playerUnit: {fileID: 0}
 --- !u!212 &1621375042
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -31491,6 +31536,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1621375044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1621375038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fcecbe4d1f62843a2f37eca405f1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHealth: 0
+  health: 20
+  strength: 1
+  speed: 1
+  defence: 1
+  magic: 1
+  movement: 12
 --- !u!1 &1796223354
 GameObject:
   m_ObjectHideFlags: 0
@@ -31824,6 +31888,7 @@ GameObject:
   - component: {fileID: 1869009826}
   - component: {fileID: 1869009825}
   - component: {fileID: 1869009824}
+  - component: {fileID: 1869009829}
   m_Layer: 0
   m_Name: Enemy (2)
   m_TagString: Untagged
@@ -31906,6 +31971,7 @@ MonoBehaviour:
   moveSpeed: 25
   tilemap: {fileID: 582902904}
   isMoving: 0
+  playerUnit: {fileID: 0}
 --- !u!212 &1869009827
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -31973,6 +32039,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1869009829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869009823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fcecbe4d1f62843a2f37eca405f1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHealth: 0
+  health: 1
+  strength: 8
+  speed: 1
+  defence: 1
+  magic: 1
+  movement: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
