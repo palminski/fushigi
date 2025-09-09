@@ -155,6 +155,34 @@ public class PathfinderController : MonoBehaviour
         return trimmedPath;
     }
 
+    public List<Node> GetAttackableTiles(Vector3 startPosition, int range = 1)
+    {
+        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
+        Node startingNode = GetNode(startGridPosition);
+
+        List<Node> neighbors = new List<Node>();
+
+        Vector3Int[] directions = {
+            Vector3Int.right,
+            Vector3Int.left,
+            Vector3Int.up,
+            Vector3Int.down,
+        };
+
+        foreach (var dir in directions)
+        {
+            Vector3Int neighborPosition = startingNode.gridPosition + dir*range;
+            Node neighbor = GetNode(neighborPosition);
+            if (neighbor != null)
+            {
+                neighbors.Add(neighbor);
+            }
+        }
+
+        return neighbors;
+
+    }
+
     // Returns all nodes neighboring a given node
     public List<Node> GetNeighbors(Node node)
     {
