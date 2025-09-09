@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[RequireComponent(typeof(UnitAttributes))]
 public class PlayerUnit : MapObject
 {
     public Mover mover;
@@ -11,10 +11,12 @@ public class PlayerUnit : MapObject
     private SpriteRenderer spriteRenderer;
 
     private Color baseColor;
+
+    public UnitAttributes unitAttributes;
     // Start is called before the first frame update
     void Awake()
     {
-
+        unitAttributes = GetComponent<UnitAttributes>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;
         mover = GetComponent<Mover>();

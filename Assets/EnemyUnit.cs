@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
+[RequireComponent(typeof(UnitAttributes))]
 public class EnemyUnit : MapObject
 {
     public Tilemap tilemap;
@@ -15,11 +16,13 @@ public class EnemyUnit : MapObject
 
     private SpriteRenderer spriteRenderer;
 
+    private UnitAttributes unitAttributes;
+
     private Color baseColor;
     // Start is called before the first frame update
     void Awake()
     {
-
+        unitAttributes = GetComponent<UnitAttributes>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;
         mover = GetComponent<Mover>();
@@ -45,7 +48,7 @@ public class EnemyUnit : MapObject
 
     private Node FindTargetTile()
     {
-        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, 8); //Starting Range
+        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement); //Starting Range
         var playerUnits = FindObjectsOfType<PlayerUnit>();
         List<Node> shortestPath = null;
         Node targetNode = null;
