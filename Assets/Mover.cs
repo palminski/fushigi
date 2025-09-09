@@ -12,7 +12,7 @@ public class Mover : MonoBehaviour
 
     private Vector3 currentFinalTarget;
 
-    private PlayerUnit playerUnit;
+    public PlayerUnit playerUnit;
 
     void Awake()
     {
