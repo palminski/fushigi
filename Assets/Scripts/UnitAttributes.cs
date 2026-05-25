@@ -12,6 +12,7 @@ public class UnitAttributes : MonoBehaviour
     public int defence = 1;
     public int magic = 1;
     public int movement = 1;
+    public MovementClass movementClass = MovementClass.Infantry;
 
 
 

@@ -56,6 +56,7 @@ public class Mover : MonoBehaviour
             }
             isMoving = false;
             if (playerUnit) playerUnit.SetInactive();
+            PathfinderController.Instance.GenerateGrid();
         }
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+//Manages objects at locations and allows translation between world and grid coordinates
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance { get; private set; }
@@ -62,7 +63,7 @@ public class MapManager : MonoBehaviour
     public void RefreshMap()
     {
         gridObjects.Clear();
-        var mapObjects = FindObjectsOfType<MapObject>();
+        var mapObjects = FindObjectsByType<MapObject>(FindObjectsSortMode.None);
         foreach (MapObject mapObject in mapObjects)
         {
             Register(mapObject);

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//something on the map
 public class MapObject : MonoBehaviour
 {
     public Vector3Int GridPosition => MapManager.Instance.WorldToGrid(transform.position);

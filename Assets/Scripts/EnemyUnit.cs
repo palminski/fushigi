@@ -40,7 +40,7 @@ public class EnemyUnit : MapObject
         Node targetNode = FindTargetTile();
         if (targetNode != null)
         {
-            List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition);
+            List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition, unitAttributes.movementClass);
             mover.StartMoving(path);
         }
     }
@@ -64,7 +64,7 @@ public class EnemyUnit : MapObject
 
     private Node FindTargetTile()
     {
-        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement);
+        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement, unitAttributes.movementClass);
         var playerUnits = FindObjectsOfType<PlayerUnit>();
         List<Node> shortestPath = null;
         Node targetNode = null;
@@ -79,7 +79,7 @@ public class EnemyUnit : MapObject
                 Vector3 targetGridPoition = playerUnit.transform.position;
                 Vector3 thisGridPosition = reachableNode.gridPosition;
 
-                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition, true);
+                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition, unitAttributes.movementClass, true);
 
                 if (shortestPath == null || shortestPath.Count > path.Count)
                 {

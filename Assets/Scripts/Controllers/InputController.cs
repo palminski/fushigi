@@ -64,8 +64,9 @@ public class InputController : MonoBehaviour
             if (validTile && tile != null)
             {
 
-                List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid);
-                if (path != null && path.Count > 0 && path.Count <= currentMover.playerUnit.unitAttributes.movement)
+                MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
+                List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid, movementClass);
+                if (path != null && path.Count > 0 && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
                 {
                     overlayTilemap.ClearAllTiles();
                     currentMover.StartMoving(path, currentMover.playerUnit.unitAttributes.movement);
@@ -103,14 +104,15 @@ public class InputController : MonoBehaviour
         if (currentMover)
         {
             Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-            List<Node> path = PathfinderController.Instance.FindPath(playerGrid, gridPosition); //Path to the tile 
+            MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
+            List<Node> path = PathfinderController.Instance.FindPath(playerGrid, gridPosition, movementClass);
 
             if (!currentMover.isMoving)
             {
                 ShowMovementRange();
             }
 
-            if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path) <= currentMover.playerUnit.unitAttributes.movement)
+            if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
             {
                 if (reticalTransform.gameObject.activeSelf == false) DrawPath(gridPosition);
                 reticalTransform.gameObject.SetActive(true);
@@ -142,10 +144,10 @@ public class InputController : MonoBehaviour
 
 
 
-        List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid);
+        MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
+        List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid, movementClass);
 
-
-        if (path == null || path.Count == 0 || PathfinderController.Instance.GetPathCost(path) > currentMover.playerUnit.unitAttributes.movement)
+        if (path == null || path.Count == 0 || PathfinderController.Instance.GetPathCost(path, movementClass) > currentMover.playerUnit.unitAttributes.movement)
         {
             ClearLine();
             return;
@@ -164,7 +166,8 @@ public class InputController : MonoBehaviour
         overlayTilemap.ClearAllTiles();
 
         Vector3Int playerPosition = tilemap.WorldToCell(currentMover.transform.position);
-        List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerPosition, currentMover.playerUnit.unitAttributes.movement);
+        MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
+        List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerPosition, currentMover.playerUnit.unitAttributes.movement, movementClass);
 
         foreach (Node node in PathfinderController.Instance.GetAllNodes())
         {
