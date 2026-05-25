@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Fushigi/TerrainType", fileName = "NewTerrainType")]
+[CreateAssetMenu(menuName = "Scriptable Objects/TerrainType", fileName = "NewTerrainType")]
 public class TerrainType : ScriptableObject
 {
     [System.Serializable]
