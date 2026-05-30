@@ -7,7 +7,7 @@ public class EnemyUnit : Unit
 {
 
     private Unit plannedTarget;
-    private Weapon plannedWeapon;
+    private WeaponInstance plannedWeapon;
     // Update is called once per frame
     void Update()
     {
@@ -52,9 +52,9 @@ public class EnemyUnit : Unit
                 Vector3Int playerPos = playerUnit.GridPosition;
                 int distance = Mathf.Abs(nodePos.x - playerPos.x) + Mathf.Abs(nodePos.y - playerPos.y);
 
-                foreach (Item item in inventory.items)
+                foreach (ItemInstance item in inventory.items)
                 {
-                    if (item is not Weapon weapon) continue;
+                    if (item is not WeaponInstance weapon) continue;
                     if (distance < weapon.minRange || distance > weapon.maxRange) continue;
 
                     CombatPreview preview = CombatCalculator.Preview(this, playerUnit, weapon, reachableNode.gridPosition);
@@ -100,9 +100,10 @@ public class EnemyUnit : Unit
         return targetNode;
     }
 
-    public void AttackUnit(Unit target, Weapon weapon)
+    public void AttackUnit(Unit target, WeaponInstance weapon)
     {
         CombatPreview preview = CombatCalculator.Preview(this, target, weapon);
         target.TakeDamage(preview.damageDealt);
+        weapon.Use();
     }
 }

@@ -91,8 +91,8 @@ public class InputController : MonoBehaviour
 
                 int dist = Mathf.Abs(attacker.GridPosition.x - clickedEnemy.GridPosition.x) + Mathf.Abs(attacker.GridPosition.y - clickedEnemy.GridPosition.y);
                 
-                Weapon equipped = attacker.inventory.EquippedWeapon;
-                Weapon weapon = (equipped != null && equipped.CanHitAt(dist)) ? equipped : FindBestAttackOption(attacker, clickedEnemy, new List<Node> {PathfinderController.Instance.GetNode(attacker.transform.position)}).weapon;
+                WeaponInstance equipped = attacker.inventory.EquippedWeapon;
+                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(dist)) ? equipped : FindBestAttackOption(attacker, clickedEnemy, new List<Node> {PathfinderController.Instance.GetNode(attacker.transform.position)}).weapon;
                 if (weapon != null) attacker.Attack(clickedEnemy, weapon);
 
                 attacker.SetInactive();
@@ -296,9 +296,9 @@ public class InputController : MonoBehaviour
 
         foreach (Node node in reachable)
         {
-            foreach (Item item in currentMover.playerUnit.inventory.items)
+            foreach (ItemInstance item in currentMover.playerUnit.inventory.items)
             {
-                if (item is not Weapon weapon) continue;
+                if (item is not WeaponInstance weapon) continue;
                 List<Node> weaponRange = PathfinderController.Instance.GetAttackableTiles(
                     tilemap.GetCellCenterWorld(node.gridPosition),
                     weapon.minRange,
@@ -331,10 +331,10 @@ public class InputController : MonoBehaviour
         lineRenderer.positionCount = 0;
     }
 
-    private (Weapon weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
+    private (WeaponInstance weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
     {
         int bestScore = int.MinValue;
-        Weapon bestWeapon = null;
+        WeaponInstance bestWeapon = null;
         Node bestTile = null;
         Vector3Int targetPosition = target.GridPosition;
 
@@ -343,9 +343,9 @@ public class InputController : MonoBehaviour
             var occupants = MapManager.Instance.GetObjectsAt(node.gridPosition);
             if (occupants.Any(o => o is PlayerUnit p && p != unit || o is EnemyUnit)) continue;
 
-            foreach (Item item in unit.inventory.items)
+            foreach (ItemInstance item in unit.inventory.items)
             {
-                if (item is not Weapon weapon) continue;
+                if (item is not WeaponInstance weapon) continue;
                 int dist = Mathf.Abs(node.gridPosition.x - targetPosition.x) + Mathf.Abs(node.gridPosition.y - targetPosition.y);
                 if (dist < weapon.minRange || dist > weapon.maxRange) continue;
 

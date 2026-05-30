@@ -7,6 +7,7 @@ public class Weapon : Item
     public int maxRange;
     public int might;
     public int weight;
+    public int maxDurability = 10;
     public WeaponType weaponType;
     public bool CanHitAt(int dist) => dist >= minRange && dist <= maxRange;
 }

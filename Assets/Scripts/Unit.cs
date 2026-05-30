@@ -15,6 +15,7 @@ public abstract class Unit : MapObject
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;
         mover = GetComponent<Mover>();
+        inventory.Initialize();
     }
 
     public void TakeDamage(int damage)

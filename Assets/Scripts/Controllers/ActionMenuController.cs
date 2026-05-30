@@ -67,9 +67,9 @@ public class ActionMenuController : MonoBehaviour
     private List<EnemyUnit> FindAttackableEnemies(PlayerUnit unit)
     {
         var enemies = new HashSet<EnemyUnit>();
-        foreach (Item item in unit.inventory.items)
+        foreach (ItemInstance item in unit.inventory.items)
         {
-            if (item is not Weapon weapon) continue;
+            if (item is not WeaponInstance weapon) continue;
             List<Node> attackableTiles = PathfinderController.Instance.GetAttackableTiles(
                 unit.transform.position, weapon.minRange, weapon.maxRange
             );

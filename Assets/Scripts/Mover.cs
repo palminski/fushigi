@@ -15,7 +15,7 @@ public class Mover : MonoBehaviour
     public PlayerUnit playerUnit;
     private Vector3 startWorldPosition;
     private EnemyUnit queuedAttackTarget;
-    private Weapon queuedAttackWeapon;
+    private WeaponInstance queuedAttackWeapon;
 
     void Awake()
     {
@@ -63,7 +63,7 @@ public class Mover : MonoBehaviour
             if (queuedAttackTarget != null)
             {
                 EnemyUnit target = queuedAttackTarget;
-                Weapon weapon = queuedAttackWeapon;
+                WeaponInstance weapon = queuedAttackWeapon;
                 queuedAttackTarget = null;
                 queuedAttackWeapon = null;
 
@@ -89,7 +89,7 @@ public class Mover : MonoBehaviour
         PathfinderController.Instance.GenerateGrid();
     }
 
-    public void QueueAttack(EnemyUnit target, Weapon weapon)
+    public void QueueAttack(EnemyUnit target, WeaponInstance weapon)
     {
         queuedAttackTarget = target;
         queuedAttackWeapon = weapon;

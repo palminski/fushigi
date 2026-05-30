@@ -21,7 +21,7 @@ public static class CombatCalculator
     public static CombatPreview Preview(
         Unit attacker,
         Unit defender,
-        Weapon weapon,
+        WeaponInstance weapon,
         Vector3Int? fromPosition = null
     )
     {
@@ -32,7 +32,7 @@ public static class CombatCalculator
 
         int damageDealt = Mathf.Max(0, attacker.unitAttributes.strength + weapon.might - defender.unitAttributes.defence);
 
-        Weapon defenderWeapon = defender.inventory.EquippedWeapon;
+        WeaponInstance defenderWeapon = defender.inventory.EquippedWeapon;
         bool defenderCanCounter = defenderWeapon != null
         && distance >= defenderWeapon.minRange
         && distance <= defenderWeapon.maxRange;

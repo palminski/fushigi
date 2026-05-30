@@ -18,4 +18,5 @@ MonoBehaviour:
   maxRange: 1
   might: 5
   weight: 2
+  maxDurability: 20
   weaponType: 0

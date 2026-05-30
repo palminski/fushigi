@@ -24,15 +24,13 @@ public class PlayerUnit : Unit
         spriteRenderer.color = baseColor;
     }
 
-    public void Attack(EnemyUnit target, Weapon weapon)
+    public void Attack(EnemyUnit target, WeaponInstance weapon)
     {
-        
         if (weapon == null) return;
-        CombatPreview preview  = CombatCalculator.Preview(this, target, weapon);
+        CombatPreview preview = CombatCalculator.Preview(this, target, weapon);
         target.TakeDamage(preview.damageDealt);
-        if(preview.defenderCanCounter)
-        {
+        if (preview.defenderCanCounter)
             TakeDamage(preview.damageReceived);
-        }
+        weapon.Use();
     }
 }
