@@ -70,7 +70,7 @@ public class Mover : MonoBehaviour
                 playerUnit.Attack(target,weapon);
                 playerUnit.SetInactive();
             } 
-            else 
+            else if (playerUnit != null)
             {
                 ActionMenuController.Instance.ShowMenu(playerUnit);
             }

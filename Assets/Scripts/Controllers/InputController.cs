@@ -88,7 +88,13 @@ public class InputController : MonoBehaviour
             {
                 PlayerUnit attacker = pendingAttackUnit;
                 CancelAttackSelection();
-                attacker.Attack(clickedEnemy, attacker.inventory.EquippedWeapon);
+
+                int dist = Mathf.Abs(attacker.GridPosition.x - clickedEnemy.GridPosition.x) + Mathf.Abs(attacker.GridPosition.y - clickedEnemy.GridPosition.y);
+                
+                Weapon equipped = attacker.inventory.EquippedWeapon;
+                Weapon weapon = (equipped != null && equipped.CanHitAt(dist)) ? equipped : FindBestAttackOption(attacker, clickedEnemy, new List<Node> {PathfinderController.Instance.GetNode(attacker.transform.position)}).weapon;
+                if (weapon != null) attacker.Attack(clickedEnemy, weapon);
+
                 attacker.SetInactive();
             }
             return;
@@ -165,7 +171,7 @@ public class InputController : MonoBehaviour
             if (playerUnit != null && playerUnit.canAct)
             {
                 Mover mover = playerUnit.mover;
-                if (mover != null)
+                if (mover != null && !mover.isMoving)
                 {
                     currentMover = mover;
                 }

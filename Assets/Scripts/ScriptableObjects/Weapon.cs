@@ -8,4 +8,5 @@ public class Weapon : Item
     public int might;
     public int weight;
     public WeaponType weaponType;
+    public bool CanHitAt(int dist) => dist >= minRange && dist <= maxRange;
 }
