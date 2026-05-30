@@ -14,6 +14,8 @@ public class Mover : MonoBehaviour
 
     public PlayerUnit playerUnit;
     private Vector3 startWorldPosition;
+    private EnemyUnit queuedAttackTarget;
+    private Weapon queuedAttackWeapon;
 
     void Awake()
     {
@@ -58,7 +60,20 @@ public class Mover : MonoBehaviour
             }
             isMoving = false;
             PathfinderController.Instance.GenerateGrid();
-            if (playerUnit) ActionMenuController.Instance.ShowMenu(playerUnit);
+            if (queuedAttackTarget != null)
+            {
+                EnemyUnit target = queuedAttackTarget;
+                Weapon weapon = queuedAttackWeapon;
+                queuedAttackTarget = null;
+                queuedAttackWeapon = null;
+
+                playerUnit.Attack(target,weapon);
+                playerUnit.SetInactive();
+            } 
+            else 
+            {
+                ActionMenuController.Instance.ShowMenu(playerUnit);
+            }
         }
     }
 
@@ -72,5 +87,11 @@ public class Mover : MonoBehaviour
     {
         transform.position = startWorldPosition;
         PathfinderController.Instance.GenerateGrid();
+    }
+
+    public void QueueAttack(EnemyUnit target, Weapon weapon)
+    {
+        queuedAttackTarget = target;
+        queuedAttackWeapon = weapon;
     }
 }

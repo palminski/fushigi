@@ -88,7 +88,7 @@ public class InputController : MonoBehaviour
             {
                 PlayerUnit attacker = pendingAttackUnit;
                 CancelAttackSelection();
-                attacker.Attack(clickedEnemy);
+                attacker.Attack(clickedEnemy, attacker.inventory.EquippedWeapon);
                 attacker.SetInactive();
             }
             return;
@@ -120,6 +120,25 @@ public class InputController : MonoBehaviour
                 currentMover = null;
                 overlayTilemap.ClearAllTiles();
                 ClearLine();
+                return;
+            }
+            
+            EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
+            if (clickedEnemy != null && !currentMover.isMoving)
+            {
+                MovementClass mc = currentMover.playerUnit.unitAttributes.movementClass;
+                List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, mc);
+                var (weapon, bestTile) = FindBestAttackOption(currentMover.playerUnit, clickedEnemy, reachable);
+                if (weapon != null && bestTile != null)
+                {
+                    List<Node>path = PathfinderController.Instance.FindPath(playerGrid, bestTile.gridPosition, mc);
+                    currentMover.QueueAttack(clickedEnemy, weapon);
+                    overlayTilemap.ClearAllTiles();
+                    currentMover.StartMoving(path, currentMover.playerUnit.unitAttributes.movement);
+                    currentMover = null;
+                    ClearLine();
+                }
+                return;
             }
 
             bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
@@ -195,7 +214,21 @@ public class InputController : MonoBehaviour
                 ShowMovementRange();
             }
 
-            if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
+            List<MapObject> hoveredObjects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            EnemyUnit hoveredEnemy = hoveredObjects.OfType<EnemyUnit>().FirstOrDefault();
+
+            if (hoveredEnemy != null && !currentMover.isMoving)
+            {
+                List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, movementClass);
+                var (_, bestTile) = FindBestAttackOption(currentMover.playerUnit, hoveredEnemy, reachable);
+                
+                if (bestTile != null)
+                    DrawPath(bestTile.gridPosition);
+                else
+                    ClearLine();
+                // reticalTransform.gameObject.SetActive(false);
+            }
+            else if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
             {
                 if (reticalTransform.gameObject.activeSelf == false) DrawPath(gridPosition);
                 reticalTransform.gameObject.SetActive(true);
@@ -252,19 +285,36 @@ public class InputController : MonoBehaviour
         MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
         List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerPosition, currentMover.playerUnit.unitAttributes.movement, movementClass);
 
+        var reachableSet = new HashSet<Node>(reachable);
+        var attackableSet = new HashSet<Node>();
+
+        foreach (Node node in reachable)
+        {
+            foreach (Item item in currentMover.playerUnit.inventory.items)
+            {
+                if (item is not Weapon weapon) continue;
+                List<Node> weaponRange = PathfinderController.Instance.GetAttackableTiles(
+                    tilemap.GetCellCenterWorld(node.gridPosition),
+                    weapon.minRange,
+                    weapon.maxRange
+                );
+                foreach (Node attackNode in weaponRange)
+                {
+                    attackableSet.Add(attackNode);
+                }
+            }
+        }
+
+
         foreach (Node node in PathfinderController.Instance.GetAllNodes())
         {
-            if (!node.walkable) continue;
-            if (reachable.Contains(node))
+            if (reachableSet.Contains(node))
             {
                 overlayTilemap.SetTile(node.gridPosition, greenOverlay);
-                foreach (Node neighbor in PathfinderController.Instance.GetNeighbors(node))
-                {
-                    if (!reachable.Contains(neighbor))
-                    {
-                        overlayTilemap.SetTile(neighbor.gridPosition, redOverlay);
-                    }
-                }
+            }
+            else if (attackableSet.Contains(node))
+            {
+                overlayTilemap.SetTile(node.gridPosition, redOverlay);
             }
 
         }
@@ -273,5 +323,35 @@ public class InputController : MonoBehaviour
     public void ClearLine()
     {
         lineRenderer.positionCount = 0;
+    }
+
+    private (Weapon weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
+    {
+        int bestScore = int.MinValue;
+        Weapon bestWeapon = null;
+        Node bestTile = null;
+        Vector3Int targetPosition = target.GridPosition;
+
+        foreach(Node node in reachable)
+        {
+            var occupants = MapManager.Instance.GetObjectsAt(node.gridPosition);
+            if (occupants.Any(o => o is PlayerUnit p && p != unit || o is EnemyUnit)) continue;
+
+            foreach (Item item in unit.inventory.items)
+            {
+                if (item is not Weapon weapon) continue;
+                int dist = Mathf.Abs(node.gridPosition.x - targetPosition.x) + Mathf.Abs(node.gridPosition.y - targetPosition.y);
+                if (dist < weapon.minRange || dist > weapon.maxRange) continue;
+
+                CombatPreview preview = CombatCalculator.Preview(unit, target, weapon, node.gridPosition);
+                int score = preview.damageDealt;
+                if (preview.killsDefender) score += 100;
+                if (!preview.defenderCanCounter) score += 1000;
+
+                if (score > bestScore) {bestScore = score; bestWeapon = weapon; bestTile = node;}
+            }
+        }
+
+        return (bestWeapon, bestTile);
     }
 }

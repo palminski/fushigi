@@ -24,9 +24,9 @@ public class PlayerUnit : Unit
         spriteRenderer.color = baseColor;
     }
 
-    public void Attack(EnemyUnit target)
+    public void Attack(EnemyUnit target, Weapon weapon)
     {
-        Weapon weapon = inventory.EquippedWeapon;
+        
         if (weapon == null) return;
         CombatPreview preview  = CombatCalculator.Preview(this, target, weapon);
         target.TakeDamage(preview.damageDealt);
