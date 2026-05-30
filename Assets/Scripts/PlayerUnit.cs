@@ -23,4 +23,16 @@ public class PlayerUnit : Unit
         canAct = true;
         spriteRenderer.color = baseColor;
     }
+
+    public void Attack(EnemyUnit target)
+    {
+        Weapon weapon = inventory.EquippedWeapon;
+        if (weapon == null) return;
+        CombatPreview preview  = CombatCalculator.Preview(this, target, weapon);
+        target.TakeDamage(preview.damageDealt);
+        if(preview.defenderCanCounter)
+        {
+            TakeDamage(preview.damageReceived);
+        }
+    }
 }

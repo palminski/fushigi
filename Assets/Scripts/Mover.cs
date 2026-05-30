@@ -13,6 +13,7 @@ public class Mover : MonoBehaviour
     private Vector3 currentFinalTarget;
 
     public PlayerUnit playerUnit;
+    private Vector3 startWorldPosition;
 
     void Awake()
     {
@@ -23,6 +24,7 @@ public class Mover : MonoBehaviour
     {
         if (!isMoving)
         {
+            startWorldPosition = transform.position;
             StartCoroutine(FollowPath(path, moveStat));
             return;
         }
@@ -55,13 +57,20 @@ public class Mover : MonoBehaviour
                 transform.position = targetPosition;
             }
             isMoving = false;
-            if (playerUnit) playerUnit.SetInactive();
             PathfinderController.Instance.GenerateGrid();
+            if (playerUnit) ActionMenuController.Instance.ShowMenu(playerUnit);
         }
     }
 
     public void DeactivatePlayer()
     {
-        if (playerUnit) playerUnit.SetInactive();
+        startWorldPosition = transform.position;
+        if (playerUnit) ActionMenuController.Instance.ShowMenu(playerUnit);
+    }
+
+    public void CancelMove()
+    {
+        transform.position = startWorldPosition;
+        PathfinderController.Instance.GenerateGrid();
     }
 }
