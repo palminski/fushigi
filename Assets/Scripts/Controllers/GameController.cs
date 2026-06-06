@@ -60,7 +60,7 @@ public class GameController : MonoBehaviour
                 yield return null;
             }
             if (enemyUnit != null)
-                enemyUnit.PerformTurnAction();
+                yield return StartCoroutine(enemyUnit.PerformTurnActionCoroutine());
         }
         ChangePhase();
     }

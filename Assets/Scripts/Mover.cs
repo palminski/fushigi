@@ -67,8 +67,8 @@ public class Mover : MonoBehaviour
                 queuedAttackTarget = null;
                 queuedAttackWeapon = null;
 
-                playerUnit.Attack(target,weapon);
-                playerUnit.SetInactive();
+                yield return StartCoroutine(playerUnit.AttackCoroutine(target, weapon));
+                if (playerUnit != null) playerUnit.SetInactive();
             } 
             else if (playerUnit != null)
             {

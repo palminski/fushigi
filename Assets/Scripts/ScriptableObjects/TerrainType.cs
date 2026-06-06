@@ -10,6 +10,9 @@ public class TerrainType : ScriptableObject
         public int cost;
         public bool impassable;
     }
+        public string displayName = "Terrain";
+        public int defenceBonus;
+        public int avoidBonus;
 
     public ClassCost[] classCosts;
 

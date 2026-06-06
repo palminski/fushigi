@@ -24,13 +24,20 @@ public class PlayerUnit : Unit
         spriteRenderer.color = baseColor;
     }
 
-    public void Attack(EnemyUnit target, WeaponInstance weapon)
+    public IEnumerator AttackCoroutine(EnemyUnit target, WeaponInstance weapon)
     {
-        if (weapon == null) return;
-        CombatPreview preview = CombatCalculator.Preview(this, target, weapon);
-        target.TakeDamage(preview.damageDealt);
-        if (preview.defenderCanCounter)
-            TakeDamage(preview.damageReceived);
-        weapon.Use();
+        if (weapon == null) yield break;
+        CombatResult result = CombatCalculator.Resolve(this, target, weapon);
+        CombatScreenController.Instance.Show(result);
+        yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
+        if (result.totalDamageToDefender > 0 && target != null)
+            target.TakeDamage(result.totalDamageToDefender);
+        if (result.defenderSwings > 0 && target != null)
+        {
+            WeaponInstance defWeapon = target.inventory.EquippedWeapon;
+            for (int i = 0; i < result.defenderSwings; i++) defWeapon?.Use();
+        }
+        if (result.totalDamageToAttacker > 0) TakeDamage(result.totalDamageToAttacker);
+        for (int i = 0; i < result.attackerSwings; i++) weapon.Use();
     }
 }

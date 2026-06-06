@@ -46,7 +46,6 @@ public class InputController : MonoBehaviour
     {
         inputActions.Gameplay.Click.performed -= OnClick;
         inputActions.Gameplay.RightClick.performed -= OnRightClick;
-
         inputActions.Gameplay.Disable();
     }
 
@@ -77,6 +76,7 @@ public class InputController : MonoBehaviour
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
 
         if (GameController.Instance.gamePhase == GamePhase.Enemy) return;
+        if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
         
 
         //Player is selecting an enemy to attack
@@ -93,9 +93,7 @@ public class InputController : MonoBehaviour
                 
                 WeaponInstance equipped = attacker.inventory.EquippedWeapon;
                 WeaponInstance weapon = (equipped != null && equipped.CanHitAt(dist)) ? equipped : FindBestAttackOption(attacker, clickedEnemy, new List<Node> {PathfinderController.Instance.GetNode(attacker.transform.position)}).weapon;
-                if (weapon != null) attacker.Attack(clickedEnemy, weapon);
-
-                attacker.SetInactive();
+                StartCoroutine(AttackThenDeactivate(attacker, clickedEnemy, weapon));
             }
             return;
         }
@@ -208,6 +206,15 @@ public class InputController : MonoBehaviour
 
         Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
         TileBase tile = tilemap.GetTile(gridPosition); // This is the currently highlighted tile
+
+        if (GameController.Instance.gamePhase == GamePhase.Player)
+        {
+            UpdateHoverInfo(worldPosition);
+        }
+        else
+        {
+            HoverInfoController.Instance?.Hide();
+        }
 
         if (currentMover)
         {
@@ -329,6 +336,76 @@ public class InputController : MonoBehaviour
     public void ClearLine()
     {
         lineRenderer.positionCount = 0;
+    }
+
+    private IEnumerator AttackThenDeactivate(PlayerUnit attacker, EnemyUnit target, WeaponInstance weapon)
+    {
+        if (weapon != null)
+            yield return StartCoroutine(attacker.AttackCoroutine(target, weapon));
+        if (attacker != null) attacker.SetInactive();
+    }
+
+    private void UpdateHoverInfo(Vector3 worldPosition)
+    {
+        List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+        Unit hoveredUnit = objects.OfType<Unit>().FirstOrDefault();
+
+        if (isSelectingAttack)
+        {
+            if (hoveredUnit is EnemyUnit hoveredEnemy && attackableEnemies.Contains(hoveredEnemy))
+                HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
+            else
+                HoverInfoController.Instance?.ShowUnit(pendingAttackUnit);
+            return;
+        }
+
+        if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        {
+            HoverInfoController.Instance?.ShowUnit(ActionMenuController.Instance.PendingUnit);
+            return;
+        }
+
+        if (currentMover != null)
+        {
+            PlayerUnit selected = currentMover.playerUnit;
+            if (hoveredUnit is EnemyUnit hoveredEnemy)
+            {
+                List<Node> reachable = PathfinderController.Instance.GetReachableNodes(
+                    currentMover.transform.position,
+                    selected.unitAttributes.movement,
+                    selected.unitAttributes.movementClass);
+                var (weapon, _) = FindBestAttackOption(selected, hoveredEnemy, reachable);
+                if (weapon != null)
+                {
+                    HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
+                    return;
+                }
+            }
+            HoverInfoController.Instance?.ShowUnit(selected);
+            return;
+        }
+
+        foreach (PlayerUnit pu in FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None))
+        {
+            if (pu.mover != null && pu.mover.isMoving)
+            {
+                HoverInfoController.Instance?.ShowUnit(pu);
+                return;
+            }
+        }
+
+        if (hoveredUnit != null)
+        {
+            HoverInfoController.Instance?.ShowUnit(hoveredUnit);
+            return;
+        }
+        Node node = PathfinderController.Instance.GetNode(worldPosition);
+        if (node?.terrainType != null)
+        {
+            HoverInfoController.Instance?.ShowTerrain(node.terrainType);
+            return;
+        }
+        HoverInfoController.Instance?.Hide();
     }
 
     private (WeaponInstance weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
