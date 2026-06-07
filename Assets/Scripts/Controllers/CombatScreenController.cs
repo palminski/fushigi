@@ -56,7 +56,8 @@ public class CombatScreenController : MonoBehaviour
         List<string> combatLines = new();
         foreach(CombatEvent evt in result.events)
         {
-            string line = $"{(evt.hitWasPlayer ? "<color=#32a852>" : "<color=#a83232>")}{evt.hitterName} attacks {evt.hitName} for {evt.damage} ({evt.hitHpBefore} -> {evt.hitHpAfter} HP)</color>";
+            string line = evt.didHit ? $"{(evt.hitWasPlayer ? "<color=#32a852>" : "<color=#a83232>")}{evt.hitterName} attacks {evt.hitName} for {evt.damage} ({evt.hitHpBefore} -> {evt.hitHpAfter} HP)</color>" : 
+            $"{(evt.hitWasPlayer ? "<color=#32a852>" : "<color=#a83232>")}{evt.hitterName} attacks {evt.hitName}, but they missed!)</color>";
             if(evt.wasFatal) line += $" - {evt.hitName} defeated!!!";
 
             combatLines.Add(line);

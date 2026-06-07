@@ -210,10 +210,12 @@ public class InputController : MonoBehaviour
         if (GameController.Instance.gamePhase == GamePhase.Player)
         {
             UpdateHoverInfo(worldPosition);
+            UpdateCombatForecast(worldPosition);
         }
         else
         {
             HoverInfoController.Instance?.Hide();
+            CombatForecastController.Instance?.Hide();
         }
 
         if (currentMover)
@@ -336,6 +338,37 @@ public class InputController : MonoBehaviour
     public void ClearLine()
     {
         lineRenderer.positionCount = 0;
+    }
+
+    private void UpdateCombatForecast(Vector3 worldPosition)
+    {
+        List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+        EnemyUnit hoveredEnemy = objects.OfType<EnemyUnit>().FirstOrDefault();
+
+        if (isSelectingAttack)
+        {
+            if (hoveredEnemy != null && attackableEnemies.Contains(hoveredEnemy))
+            {
+                int dist = Mathf.Abs(pendingAttackUnit.GridPosition.x - hoveredEnemy.GridPosition.x)
+                         + Mathf.Abs(pendingAttackUnit.GridPosition.y - hoveredEnemy.GridPosition.y);
+                WeaponInstance equipped = pendingAttackUnit.inventory.EquippedWeapon;
+                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(dist)) ? equipped
+                    : FindBestAttackOption(pendingAttackUnit, hoveredEnemy, new List<Node> { PathfinderController.Instance.GetNode(pendingAttackUnit.transform.position) }).weapon;
+                if (weapon != null) { CombatForecastController.Instance?.Show(pendingAttackUnit, hoveredEnemy, weapon); return; }
+            }
+            CombatForecastController.Instance?.Hide();
+            return;
+        }
+
+        if (currentMover != null && !currentMover.isMoving && hoveredEnemy != null)
+        {
+            Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
+            List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, currentMover.playerUnit.unitAttributes.movementClass);
+            var (weapon, bestTile) = FindBestAttackOption(currentMover.playerUnit, hoveredEnemy, reachable);
+            if (weapon != null && bestTile != null) { CombatForecastController.Instance?.Show(currentMover.playerUnit, hoveredEnemy, weapon, bestTile.gridPosition); return; }
+        }
+
+        CombatForecastController.Instance?.Hide();
     }
 
     private IEnumerator AttackThenDeactivate(PlayerUnit attacker, EnemyUnit target, WeaponInstance weapon)

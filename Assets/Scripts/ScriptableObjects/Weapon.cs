@@ -6,6 +6,7 @@ public class Weapon : Item
     public int minRange;
     public int maxRange;
     public int might;
+    public int hit = 80;
     public int weight;
     public int maxDurability = 10;
     public WeaponType weaponType;

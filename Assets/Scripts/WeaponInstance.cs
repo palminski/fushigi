@@ -9,6 +9,7 @@ public class WeaponInstance : ItemInstance
     public int minRange => WeaponData.minRange;
     public int maxRange => WeaponData.maxRange;
     public int might => IsBroken ? 1 : WeaponData.might;
+    public int hit => WeaponData.hit;
     public int weight => WeaponData.weight;
     public WeaponType weaponType => WeaponData.weaponType;
     public bool CanHitAt(int dist) => dist >= minRange && dist <= maxRange;
