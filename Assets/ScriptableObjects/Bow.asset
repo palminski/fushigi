@@ -16,7 +16,8 @@ MonoBehaviour:
   icon: {fileID: 0}
   minRange: 2
   maxRange: 2
-  might: 2
+  might: 4
+  hit: 80
   weight: 2
-  maxDurability: 2
+  maxDurability: 30
   weaponType: 3
