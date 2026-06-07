@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7f723b281c4cabd4f95a4467caf562c0, type: 3}
-  m_Name: SteelSword
+  m_Name: IronSword
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
-  itemName: Steel Sword
+  itemName: Iron Sword
   icon: {fileID: 0}
   minRange: 1
   maxRange: 1

@@ -12,6 +12,14 @@ public class Inventory
     public int maxCapacity = 5;
     public WeaponInstance EquippedWeapon => items.OfType<WeaponInstance>().FirstOrDefault();
 
+    public void Equip(WeaponInstance weapon)
+    {
+        int index = items.IndexOf(weapon);
+        if (index <= 0) return;
+        items.RemoveAt(index);
+        items.Insert(0, weapon);
+    }
+
     public void Initialize()
     {
         items.Clear();
