@@ -74,9 +74,17 @@ public class ActionMenuController : MonoBehaviour
 
     public void OnTradeClicked()
     {
+        FindAdjacentPlayers(pendingUnit);
         if (adjacentPlayers.Count == 0) return;
         menuPanel.SetActive(false);
-        TradeMenuController.Instance.Show(pendingUnit, adjacentPlayers[0]);
+        if (adjacentPlayers.Count == 1)
+        {
+            TradeMenuController.Instance.Show(pendingUnit, adjacentPlayers[0]);
+        }
+        else
+        {
+            InputController.Instance.StartTradePartnerSelection(pendingUnit, adjacentPlayers);
+        }
     }
 
     public void OnInventoryClicked()

@@ -23,6 +23,10 @@ public class InputController : MonoBehaviour
     private PlayerUnit pendingAttackUnit;
     private List<EnemyUnit> attackableEnemies = new List<EnemyUnit>();
 
+    private bool isSelectingTradePartner = false;
+    private PlayerUnit pendingTradeUnit;
+    private List<PlayerUnit> tradablePartners = new List<PlayerUnit>();
+
     private int weaponCycleIndex = 0;
     private EnemyUnit lastForecastTarget = null;
     private WeaponInstance forecastWeapon = null;
@@ -76,6 +80,25 @@ public class InputController : MonoBehaviour
         overlayTilemap.ClearAllTiles();
     }
 
+    public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
+    {
+        pendingTradeUnit = unit;
+        tradablePartners = new List<PlayerUnit>(partners);
+        isSelectingTradePartner = true;
+
+        overlayTilemap.ClearAllTiles();
+        foreach (PlayerUnit partner in partners)
+            overlayTilemap.SetTile(partner.GridPosition, greenOverlay);
+    }
+
+    public void CancelTradeSelection()
+    {
+        isSelectingTradePartner = false;
+        pendingTradeUnit = null;
+        tradablePartners.Clear();
+        overlayTilemap.ClearAllTiles();
+    }
+
     private void OnClick(InputAction.CallbackContext context)
     {
         Vector2 screenPosition = Mouse.current.position.ReadValue();
@@ -100,6 +123,19 @@ public class InputController : MonoBehaviour
                 CancelAttackSelection();
                 attacker.inventory.Equip(weapon);
                 StartCoroutine(AttackThenDeactivate(attacker, clickedEnemy, weapon));
+            }
+            return;
+        }
+
+        if (isSelectingTradePartner)
+        {
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            PlayerUnit clickedPartner = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
+            if (clickedPartner != null && tradablePartners.Contains(clickedPartner))
+            {
+                PlayerUnit trader = pendingTradeUnit;
+                CancelTradeSelection();
+                TradeMenuController.Instance.Show(trader, clickedPartner);
             }
             return;
         }
@@ -196,6 +232,11 @@ public class InputController : MonoBehaviour
         {
             TradeMenuController.Instance.Close();
         }
+        else if (isSelectingTradePartner)
+        {
+            CancelTradeSelection();
+            ActionMenuController.Instance.ReopenMenu();
+        }
         else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
         {
             InventoryMenuController.Instance.CloseSubMenu();
@@ -245,7 +286,8 @@ public class InputController : MonoBehaviour
 
         if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
             || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen))
+            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
+            || isSelectingTradePartner)
         {
             reticalTransform.gameObject.SetActive(false);
         }
