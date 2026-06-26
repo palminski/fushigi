@@ -27,6 +27,8 @@ public class Inventory
         {
             if (item is Weapon weapon)
                 items.Add(new WeaponInstance { data = weapon, currentDurability = weapon.maxDurability });
+            else if (item is Consumable)
+                items.Add(new ConsumableInstance { data = item });
             else
                 items.Add(new ItemInstance { data = item });
         }

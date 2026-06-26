@@ -83,6 +83,8 @@ public class InputController : MonoBehaviour
 
         if (GameController.Instance.gamePhase == GamePhase.Enemy) return;
         if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
+        if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen) return;
+        if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen) return;
         
 
         //Player is selecting an enemy to attack
@@ -190,7 +192,19 @@ public class InputController : MonoBehaviour
 
     private void OnRightClick(InputAction.CallbackContext context)
     {
-        if(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
+        {
+            TradeMenuController.Instance.Close();
+        }
+        else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
+        {
+            InventoryMenuController.Instance.CloseSubMenu();
+        }
+        else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+        {
+            InventoryMenuController.Instance.Close();
+        }
+        else if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
         {
             ActionMenuController.Instance.CancelMenu();
         }
@@ -229,7 +243,13 @@ public class InputController : MonoBehaviour
             CombatForecastController.Instance?.Hide();
         }
 
-        if (currentMover)
+        if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+            || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen))
+        {
+            reticalTransform.gameObject.SetActive(false);
+        }
+        else if (currentMover)
         {
             Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
             MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
@@ -270,6 +290,7 @@ public class InputController : MonoBehaviour
         }
         else
         {
+            reticalTransform.gameObject.SetActive(true);
             reticalTransform.position = tilemap.GetCellCenterWorld(gridPosition);
         }
     }

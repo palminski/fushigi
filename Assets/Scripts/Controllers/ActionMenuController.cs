@@ -8,9 +8,13 @@ public class ActionMenuController : MonoBehaviour
 
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private Button attackButton;
+    [SerializeField] private Button inventoryButton;
+    [SerializeField] private Button tradeButton;
     [SerializeField] private Button waitButton;
     private PlayerUnit pendingUnit;
     private List<EnemyUnit> attackableEnemies = new List<EnemyUnit>();
+    private List<PlayerUnit> adjacentPlayers = new List<PlayerUnit>();
+    private bool canCancel = true;
     public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
     public PlayerUnit PendingUnit => pendingUnit;
 
@@ -29,10 +33,13 @@ public class ActionMenuController : MonoBehaviour
     {
         pendingUnit = movedUnit;
         attackableEnemies = FindAttackableEnemies(movedUnit);
+        adjacentPlayers = FindAdjacentPlayers(movedUnit);
         Vector3 screenPostion = Camera.main.WorldToScreenPoint(movedUnit.transform.position);
         menuPanel.GetComponent<RectTransform>().position = screenPostion + new Vector3(35f, 0f, 0f);
 
         attackButton.gameObject.SetActive(attackableEnemies.Count > 0);
+        inventoryButton.gameObject.SetActive(movedUnit.inventory.items.Count > 0);
+        tradeButton.gameObject.SetActive(adjacentPlayers.Count > 0);
         menuPanel.SetActive(true);
     }
 
@@ -41,14 +48,41 @@ public class ActionMenuController : MonoBehaviour
         menuPanel.SetActive(false);
         pendingUnit = null;
         attackableEnemies.Clear();
+        adjacentPlayers.Clear();
+        canCancel = true;
     }
 
     public void CancelMenu()
     {
+        if (!canCancel) return;
         PlayerUnit unit = pendingUnit;
         HideMenu();
         unit.mover.CancelMove();
         InputController.Instance.currentMover = unit.mover;
+    }
+
+    public void ReopenMenu()
+    {
+        if (pendingUnit != null) menuPanel.SetActive(true);
+    }
+
+    public void ReopenMenuLocked()
+    {
+        canCancel = false;
+        if (pendingUnit != null) menuPanel.SetActive(true);
+    }
+
+    public void OnTradeClicked()
+    {
+        if (adjacentPlayers.Count == 0) return;
+        menuPanel.SetActive(false);
+        TradeMenuController.Instance.Show(pendingUnit, adjacentPlayers[0]);
+    }
+
+    public void OnInventoryClicked()
+    {
+        menuPanel.SetActive(false);
+        InventoryMenuController.Instance.Show(pendingUnit);
     }
 
     public void OnAttackClicked()
@@ -62,6 +96,17 @@ public class ActionMenuController : MonoBehaviour
         PlayerUnit unit = pendingUnit;
         HideMenu();
         unit.SetInactive();
+    }
+
+    private List<PlayerUnit> FindAdjacentPlayers(PlayerUnit unit)
+    {
+        var result = new List<PlayerUnit>();
+        Vector3Int pos = unit.GridPosition;
+        Vector3Int[] neighbors = { pos + Vector3Int.up, pos + Vector3Int.down, pos + Vector3Int.left, pos + Vector3Int.right };
+        foreach (Vector3Int n in neighbors)
+            foreach (MapObject obj in MapManager.Instance.GetObjectsAt(n))
+                if (obj is PlayerUnit other && other != unit) result.Add(other);
+        return result;
     }
 
     private List<EnemyUnit> FindAttackableEnemies(PlayerUnit unit)
