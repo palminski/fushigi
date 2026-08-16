@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -240,7 +239,7 @@ public class InputController : MonoBehaviour
             if (clickedEnemy != null && capturableEnemies.Contains(clickedEnemy))
             {
                 PlayerUnit capturer = pendingCaptureUnit;
-                WeaponInstance equipped = capturer.inventory.EquippedWeapon;
+                WeaponInstance equipped = (forecastWeapon != null && lastForecastTarget == clickedEnemy) ? forecastWeapon : capturer.inventory.EquippedWeapon;
                 WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : capturer.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
                 CancelCaptureSelection();
                 capturer.inventory.Equip(weapon);
@@ -571,7 +570,7 @@ public class InputController : MonoBehaviour
             lastForecastTarget = hoveredEnemy;
         }
 
-        if (isSelectingAttack)
+        if (isSelectingAttack || isSelectingCapture)
         {
             if (hoveredEnemy != null && attackableEnemies.Contains(hoveredEnemy))
             {
@@ -584,6 +583,20 @@ public class InputController : MonoBehaviour
                     forecastWeapon = valid[weaponCycleIndex];
                     forecastBestTile = null;
                     CombatForecastController.Instance?.Show(pendingAttackUnit, hoveredEnemy, forecastWeapon);
+                    return;
+                }
+            }
+            else if (hoveredEnemy != null && capturableEnemies.Contains(hoveredEnemy))
+            {
+                int dist = Mathf.Abs(pendingCaptureUnit.GridPosition.x - hoveredEnemy.GridPosition.x)
+                         + Mathf.Abs(pendingCaptureUnit.GridPosition.y - hoveredEnemy.GridPosition.y);
+                List<WeaponInstance> valid = GetWeaponsInRange(pendingCaptureUnit, dist);
+                if (valid.Count > 0)
+                {
+                    weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
+                    forecastWeapon = valid[weaponCycleIndex];
+                    forecastBestTile = null;
+                    CombatForecastController.Instance?.Show(pendingCaptureUnit, hoveredEnemy, forecastWeapon, null, true);
                     return;
                 }
             }
@@ -661,12 +674,14 @@ public class InputController : MonoBehaviour
         List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
         Unit hoveredUnit = objects.OfType<Unit>().FirstOrDefault();
 
-        if (isSelectingAttack)
+        if (isSelectingAttack || isSelectingCapture)
         {
-            if (hoveredUnit is EnemyUnit hoveredEnemy && attackableEnemies.Contains(hoveredEnemy))
+            if (hoveredUnit is EnemyUnit hoveredEnemy && (attackableEnemies.Contains(hoveredEnemy) || capturableEnemies.Contains(hoveredEnemy)))
                 HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
-            else
+            else if (pendingAttackUnit != null)
                 HoverInfoController.Instance?.ShowUnit(pendingAttackUnit);
+            else if (pendingCaptureUnit != null)
+                HoverInfoController.Instance?.ShowUnit(pendingCaptureUnit);
             return;
         }
 

@@ -26,9 +26,9 @@ public class CombatForecastController : MonoBehaviour
         panel.SetActive(false);
     }
 
-    public void Show(PlayerUnit attacker, EnemyUnit defender, WeaponInstance weapon, Vector3Int? fromPosition = null)
+    public void Show(PlayerUnit attacker, EnemyUnit defender, WeaponInstance weapon, Vector3Int? fromPosition = null, bool isCaptureAttempt = false)
     {
-        CombatPreview preview = CombatCalculator.Preview(attacker, defender, weapon, fromPosition);
+        CombatPreview preview = CombatCalculator.Preview(attacker, defender, weapon, fromPosition, isCaptureAttempt);
 
         playerNameText.text = attacker.gameObject.name;
         playerWeaponText.text = $"{weapon.data.itemName} ({weapon.currentDurability}/{weapon.WeaponData.maxDurability})";

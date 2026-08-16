@@ -57,6 +57,9 @@ public static class CombatCalculator
     private static int CalcDamage(Unit atk, Unit def, WeaponInstance w)
         => Mathf.Max(0, atk.unitAttributes.strength + w.might - def.unitAttributes.defence);
 
+    private static int CalcCaptureDamage(Unit atk, Unit def, WeaponInstance w)
+        => Mathf.Max(0, atk.unitAttributes.strength/2 + w.might - def.unitAttributes.defence);
+
     private static int CalcAvoid(Unit unit, WeaponInstance equippedWeapon, int terrainAvoid)
     {
         int weightPenalty = Mathf.Max(0, (equippedWeapon?.weight ?? 0) - unit.unitAttributes.build);
@@ -65,6 +68,8 @@ public static class CombatCalculator
 
     private static int CalcHitChance(WeaponInstance weapon, Unit attacker, int defenderAvoid)
         => Mathf.Clamp(weapon.hit + attacker.unitAttributes.skill - defenderAvoid, 0, 100);
+    private static int CalcCaptureHitChance(WeaponInstance weapon, Unit attacker, int defenderAvoid)
+    => Mathf.Clamp(weapon.hit + attacker.unitAttributes.skill/2 - defenderAvoid, 0, 100);
 
     private static bool RollHit(int hitPercent)
     {
@@ -76,12 +81,12 @@ public static class CombatCalculator
     private static int GetTerrainAvoid(Vector3Int gridPos)
         => PathfinderController.Instance.GetNode(gridPos)?.terrainType?.avoidBonus ?? 0;
 
-    public static CombatPreview Preview(Unit attacker, Unit defender, WeaponInstance weapon, Vector3Int? fromPosition = null)
+    public static CombatPreview Preview(Unit attacker, Unit defender, WeaponInstance weapon, Vector3Int? fromPosition = null, bool isCaptureAttempt = false)
     {
         Vector3Int attackerPos = fromPosition ?? attacker.GridPosition;
         int distance = Mathf.Abs(attackerPos.x - defender.GridPosition.x) + Mathf.Abs(attackerPos.y - defender.GridPosition.y);
 
-        int damageDealt = CalcDamage(attacker, defender, weapon);
+        int damageDealt = isCaptureAttempt ? CalcCaptureDamage(attacker, defender, weapon) : CalcDamage(attacker, defender, weapon);
         WeaponInstance defWeapon = defender.inventory.EquippedWeapon;
         bool defenderCanCounter = defWeapon != null && distance >= defWeapon.minRange && distance <= defWeapon.maxRange;
         int damageReceived = defenderCanCounter ? CalcDamage(defender, attacker, defWeapon) : 0;
@@ -91,7 +96,7 @@ public static class CombatCalculator
 
         int defenderAvoid = CalcAvoid(defender, defWeapon, GetTerrainAvoid(defender.GridPosition));
         int attackerAvoid = CalcAvoid(attacker, weapon, GetTerrainAvoid(attackerPos));
-        int attackerHitChance = CalcHitChance(weapon, attacker, defenderAvoid);
+        int attackerHitChance = isCaptureAttempt ? CalcCaptureHitChance(weapon, attacker, defenderAvoid) : CalcHitChance(weapon, attacker, defenderAvoid);
         int defenderHitChance = defenderCanCounter ? CalcHitChance(defWeapon, defender, attackerAvoid) : 0;
 
         return new CombatPreview(damageDealt, damageReceived, killsDefender, defenderCanCounter, attackerDoubles, defenderDoubles, attackerHitChance, defenderHitChance);
