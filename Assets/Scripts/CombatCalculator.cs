@@ -159,4 +159,23 @@ public static class CombatCalculator
             defenderDied = defHp <= 0,
         };
     }
+
+    public static CombatResult ResolveCapture(Unit attacker, Unit defender, WeaponInstance weapon)
+    {
+        int origStr = attacker.unitAttributes.strength;
+        int origSkill = attacker.unitAttributes.skill;
+
+        attacker.unitAttributes.strength /= 2;
+        attacker.unitAttributes.skill /= 2;
+
+        try
+        {
+            return Resolve(attacker, defender, weapon);
+        }
+        finally
+        {
+            attacker.unitAttributes.strength = origStr;
+            attacker.unitAttributes.skill = origSkill;
+        }
+    }
 }

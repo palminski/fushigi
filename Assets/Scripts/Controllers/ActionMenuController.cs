@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,9 +12,16 @@ public class ActionMenuController : MonoBehaviour
     [SerializeField] private Button inventoryButton;
     [SerializeField] private Button tradeButton;
     [SerializeField] private Button waitButton;
+
+    [SerializeField] private Button rescueButton;
+    [SerializeField] private Button captureButton;
+    [SerializeField] private Button dropButton;
+    [SerializeField] private Button heldTradeButton;
     private PlayerUnit pendingUnit;
     private List<EnemyUnit> attackableEnemies = new List<EnemyUnit>();
     private List<PlayerUnit> adjacentPlayers = new List<PlayerUnit>();
+    private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
+    private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
     private bool canCancel = true;
     public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
     public PlayerUnit PendingUnit => pendingUnit;
@@ -40,7 +48,18 @@ public class ActionMenuController : MonoBehaviour
         attackButton.gameObject.SetActive(attackableEnemies.Count > 0);
         inventoryButton.gameObject.SetActive(movedUnit.inventory.items.Count > 0);
         tradeButton.gameObject.SetActive(adjacentPlayers.Count > 0);
+        RefreshUnitHoldButtons();
         menuPanel.SetActive(true);
+    }
+
+    private void RefreshUnitHoldButtons()
+    {
+        rescuableAllies = FindRescuableAllies(pendingUnit);
+        capturableEnemies = FindCapturableEnemies(pendingUnit);
+        rescueButton.gameObject.SetActive(pendingUnit.heldUnit == null && rescuableAllies.Count > 0);
+        captureButton.gameObject.SetActive(pendingUnit.heldUnit == null && capturableEnemies.Count > 0);
+        dropButton.gameObject.SetActive(pendingUnit.heldUnit != null);
+        heldTradeButton.gameObject.SetActive(pendingUnit.heldUnit != null);
     }
 
     public void HideMenu()
@@ -49,6 +68,8 @@ public class ActionMenuController : MonoBehaviour
         pendingUnit = null;
         attackableEnemies.Clear();
         adjacentPlayers.Clear();
+        rescuableAllies.Clear();
+        capturableEnemies.Clear();
         canCancel = true;
     }
 
@@ -99,11 +120,67 @@ public class ActionMenuController : MonoBehaviour
         menuPanel.SetActive(false);
         pendingUnit = null;
     }
+    public void OnRescueClicked()
+    {
+        if(rescuableAllies.Count == 0) return;
+        menuPanel.SetActive(false);
+        if(rescuableAllies.Count == 1)
+        {
+            CompleteRescue(pendingUnit, rescuableAllies[0]);
+        }
+        else
+        {
+            InputController.Instance.StartRescueTargetSelection(pendingUnit, rescuableAllies);
+        }
+    }
+    public void OnCaptureClicked()
+    {
+        if(capturableEnemies.Count == 0) return;
+        InputController.Instance.StartCaptureTargetSelection(pendingUnit, capturableEnemies);
+        menuPanel.SetActive(false);
+        pendingUnit = null;
+    }
+    public void OnDropClicked()
+    {
+        if(pendingUnit.heldUnit == null) return;
+        if (pendingUnit.heldUnit is PlayerUnit)
+        {
+            menuPanel.SetActive(false);
+            InputController.Instance.StartDropTileSelection(pendingUnit);
+        }
+        else if (pendingUnit.heldUnit is EnemyUnit)
+        {
+            //Maybe this should spend whole turn?
+            pendingUnit.ReleaseHeld();
+            RefreshUnitHoldButtons();
+            ReopenMenuLocked();
+        }
+    }
+    public void OnHeldTradeClicked()
+    {
+        if(pendingUnit.heldUnit == null) return;
+        menuPanel.SetActive(false);
+        TradeMenuController.Instance.Show(pendingUnit, pendingUnit.heldUnit);
+    }
+
     public void OnWaitClicked()
     {
         PlayerUnit unit = pendingUnit;
         HideMenu();
         unit.SetInactive();
+    }
+
+    public void CompleteRescue(PlayerUnit rescuer, PlayerUnit ally)
+    {
+        rescuer.PickUpUnit(ally);
+        RefreshUnitHoldButtons();
+        ReopenMenuLocked();
+    }
+
+    public void CompleteDrop()
+    {
+        RefreshUnitHoldButtons();
+        ReopenMenuLocked();
     }
 
     private List<PlayerUnit> FindAdjacentPlayers(PlayerUnit unit)
@@ -126,14 +203,43 @@ public class ActionMenuController : MonoBehaviour
             List<Node> attackableTiles = PathfinderController.Instance.GetAttackableTiles(
                 unit.transform.position, weapon.minRange, weapon.maxRange
             );
-            foreach(Node node in attackableTiles)
+            foreach (Node node in attackableTiles)
             {
-                foreach(MapObject obj in MapManager.Instance.GetObjectsAt(node.gridPosition))
+                foreach (MapObject obj in MapManager.Instance.GetObjectsAt(node.gridPosition))
                 {
                     if (obj is EnemyUnit enemy) enemies.Add(enemy);
                 }
             }
         }
         return new List<EnemyUnit>(enemies);
+    }
+
+    private List<PlayerUnit> FindRescuableAllies(PlayerUnit unit)
+    {
+        var result = new List<PlayerUnit>();
+        foreach (PlayerUnit otherUnit in FindAdjacentPlayers(unit))
+        {
+            if (otherUnit.heldUnit == null && unit.unitAttributes.build > otherUnit.unitAttributes.build) result.Add(otherUnit);
+        }
+        return result;
+    }
+
+    private List<EnemyUnit> FindCapturableEnemies(PlayerUnit unit)
+    {
+        var enemies = new List<EnemyUnit>();
+
+        bool hasWeaponsThatCanCaptureAtRangeOne = unit.inventory.items.OfType<WeaponInstance>().Any(w => w.CanHitAt(1));
+        if (!hasWeaponsThatCanCaptureAtRangeOne) return enemies;
+
+        Vector3Int position = unit.GridPosition;
+        Vector3Int[] neighborCoords = { position + Vector3Int.up, position + Vector3Int.down, position + Vector3Int.right, position + Vector3Int.left };
+        foreach (Vector3Int neighborCoord in neighborCoords)
+        {
+            foreach (MapObject mapObject in MapManager.Instance.GetObjectsAt(neighborCoord))
+            {
+                if (mapObject is EnemyUnit enemy) enemies.Add(enemy);
+            }
+        }
+        return enemies;
     }
 }

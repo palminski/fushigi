@@ -19,7 +19,7 @@ public class TradeMenuController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dragGhostText;
 
     private PlayerUnit initiator;
-    private PlayerUnit partner;
+    private Unit partner;
     private HashSet<ItemInstance> initiatorSnapshot;
     private HashSet<ItemInstance> partnerSnapshot;
     private TradeItemRow selectedRow;
@@ -35,7 +35,7 @@ public class TradeMenuController : MonoBehaviour
         if (dragGhost != null) dragGhost.gameObject.SetActive(false);
     }
 
-    public void Show(PlayerUnit initiator, PlayerUnit partner)
+    public void Show(PlayerUnit initiator, Unit partner)
     {
         this.initiator = initiator;
         this.partner = partner;
@@ -60,7 +60,7 @@ public class TradeMenuController : MonoBehaviour
         ClearSelection();
     }
 
-    private void BuildList(Transform parent, PlayerUnit unit, bool isLeftSide)
+    private void BuildList(Transform parent, Unit unit, bool isLeftSide)
     {
         foreach (Transform child in parent)
             Destroy(child.gameObject);
@@ -98,7 +98,7 @@ public class TradeMenuController : MonoBehaviour
         }
         else if (selectedRow.isLeftSide == clicked.isLeftSide)
         {
-            PlayerUnit unit = selectedRow.isLeftSide ? initiator : partner;
+            Unit unit = selectedRow.isLeftSide ? initiator : partner;
             int fromIdx = unit.inventory.items.IndexOf(selectedRow.item);
             int toIdx = unit.inventory.items.IndexOf(clicked.item);
             (unit.inventory.items[fromIdx], unit.inventory.items[toIdx]) = (unit.inventory.items[toIdx], unit.inventory.items[fromIdx]);
@@ -114,8 +114,8 @@ public class TradeMenuController : MonoBehaviour
 
     private void PerformSwap(TradeItemRow rowA, TradeItemRow rowB)
     {
-        PlayerUnit unitA = rowA.isLeftSide ? initiator : partner;
-        PlayerUnit unitB = rowB.isLeftSide ? initiator : partner;
+        Unit unitA = rowA.isLeftSide ? initiator : partner;
+        Unit unitB = rowB.isLeftSide ? initiator : partner;
         int idxA = unitA.inventory.items.IndexOf(rowA.item);
         int idxB = unitB.inventory.items.IndexOf(rowB.item);
         unitA.inventory.items[idxA] = rowB.item;
@@ -125,8 +125,8 @@ public class TradeMenuController : MonoBehaviour
 
     private void PerformGive(ItemInstance item, bool fromLeft)
     {
-        PlayerUnit from = fromLeft ? initiator : partner;
-        PlayerUnit to = fromLeft ? partner : initiator;
+        Unit from = fromLeft ? initiator : partner;
+        Unit to = fromLeft ? partner : initiator;
         if (to.inventory.items.Count >= to.inventory.maxCapacity) return;
         from.inventory.items.Remove(item);
         to.inventory.items.Add(item);
@@ -149,7 +149,7 @@ public class TradeMenuController : MonoBehaviour
         }
         else if (sourceIsLeft == target.isLeftSide)
         {
-            PlayerUnit unit = sourceIsLeft ? initiator : partner;
+            Unit unit = sourceIsLeft ? initiator : partner;
             int fromIdx = unit.inventory.items.IndexOf(sourceItem);
             int toIdx = unit.inventory.items.IndexOf(target.item);
             (unit.inventory.items[fromIdx], unit.inventory.items[toIdx]) = (unit.inventory.items[toIdx], unit.inventory.items[fromIdx]);
@@ -157,8 +157,8 @@ public class TradeMenuController : MonoBehaviour
         }
         else
         {
-            PlayerUnit unitA = sourceIsLeft ? initiator : partner;
-            PlayerUnit unitB = target.isLeftSide ? initiator : partner;
+            Unit unitA = sourceIsLeft ? initiator : partner;
+            Unit unitB = target.isLeftSide ? initiator : partner;
             int idxA = unitA.inventory.items.IndexOf(sourceItem);
             int idxB = unitB.inventory.items.IndexOf(target.item);
             unitA.inventory.items[idxA] = target.item;
@@ -257,7 +257,7 @@ public class TradeMenuController : MonoBehaviour
             ActionMenuController.Instance.ReopenMenu();
     }
 
-    private void AutoEquip(PlayerUnit unit)
+    private void AutoEquip(Unit unit)
     {
         WeaponInstance first = unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault();
         if (first != null) unit.inventory.Equip(first);

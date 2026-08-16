@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -26,6 +27,18 @@ public class InputController : MonoBehaviour
     private bool isSelectingTradePartner = false;
     private PlayerUnit pendingTradeUnit;
     private List<PlayerUnit> tradablePartners = new List<PlayerUnit>();
+
+    private bool isSelectingDropTile = false;
+    private PlayerUnit pendingDropUnit;
+    private List<Vector3Int> validDropTiles = new List<Vector3Int>();
+
+    private bool isSelectingRescue = false;
+    private PlayerUnit pendingRescueUnit;
+    private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
+
+    private bool isSelectingCapture = false;
+    private PlayerUnit pendingCaptureUnit;
+    private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
 
     private int weaponCycleIndex = 0;
     private EnemyUnit lastForecastTarget = null;
@@ -90,7 +103,6 @@ public class InputController : MonoBehaviour
         foreach (PlayerUnit partner in partners)
             overlayTilemap.SetTile(partner.GridPosition, greenOverlay);
     }
-
     public void CancelTradeSelection()
     {
         isSelectingTradePartner = false;
@@ -99,6 +111,74 @@ public class InputController : MonoBehaviour
         overlayTilemap.ClearAllTiles();
     }
 
+    public void StartRescueTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
+    {
+        pendingRescueUnit = unit;
+        rescuableAllies = new List<PlayerUnit>(allies);
+        isSelectingRescue = true;
+
+        overlayTilemap.ClearAllTiles();
+        foreach (PlayerUnit ally in rescuableAllies)
+            overlayTilemap.SetTile(ally.GridPosition, greenOverlay);
+    }
+    public void CancelRescueSelection()
+    {
+        isSelectingRescue = false;
+        pendingRescueUnit = null;
+        rescuableAllies.Clear();
+        overlayTilemap.ClearAllTiles();
+    }
+
+    public void StartCaptureTargetSelection(PlayerUnit unit, List<EnemyUnit> enemies)
+    {
+        pendingCaptureUnit = unit;
+        capturableEnemies = new List<EnemyUnit>(enemies);
+        isSelectingCapture = true;
+
+        overlayTilemap.ClearAllTiles();
+        foreach (EnemyUnit enemy in capturableEnemies)
+            overlayTilemap.SetTile(enemy.GridPosition, redOverlay);
+    }
+    public void CancelCaptureSelection()
+    {
+        isSelectingCapture = false;
+        pendingCaptureUnit = null;
+        capturableEnemies.Clear();
+        overlayTilemap.ClearAllTiles();
+    }
+
+    public void StartDropTileSelection(PlayerUnit unit)
+    {
+        pendingDropUnit = unit;
+        isSelectingDropTile = true;
+        validDropTiles.Clear();
+
+        overlayTilemap.ClearAllTiles();
+        Vector3Int pos = unit.GridPosition;
+        Vector3Int[] neighborCoords = {pos + Vector3Int.up, pos + Vector3Int.down, pos + Vector3Int.left, pos + Vector3Int.right };
+        foreach (Vector3Int neighborCoord in neighborCoords)
+        {
+            bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is PlayerUnit || o is EnemyUnit);
+            bool walkable = PathfinderController.Instance.GetNode(neighborCoord)?.walkable ?? false;
+            if (!occupied && walkable)
+            {
+                validDropTiles.Add(neighborCoord);
+                overlayTilemap.SetTile(neighborCoord, greenOverlay);
+            }
+        }
+    }
+    public void CancelDropSelection()
+    {
+        isSelectingDropTile = false;
+        pendingDropUnit = null;
+        validDropTiles.Clear();
+        overlayTilemap.ClearAllTiles();
+    }
+
+
+    // 
+    // BEHAVIOR TREE FOR LEFT CLICKS
+    // 
     private void OnClick(InputAction.CallbackContext context)
     {
         Vector2 screenPosition = Mouse.current.position.ReadValue();
@@ -136,6 +216,48 @@ public class InputController : MonoBehaviour
                 PlayerUnit trader = pendingTradeUnit;
                 CancelTradeSelection();
                 TradeMenuController.Instance.Show(trader, clickedPartner);
+            }
+            return;
+        }
+
+        if (isSelectingRescue)
+        {
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            PlayerUnit clickedAlly = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
+            if (clickedAlly != null && rescuableAllies.Contains(clickedAlly))
+            {
+                PlayerUnit rescuer = pendingRescueUnit;
+                CancelRescueSelection();
+                ActionMenuController.Instance.CompleteRescue(rescuer, clickedAlly);
+            }
+            return;
+        }
+
+        if (isSelectingCapture)
+        {
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
+            if (clickedEnemy != null && capturableEnemies.Contains(clickedEnemy))
+            {
+                PlayerUnit capturer = pendingCaptureUnit;
+                WeaponInstance equipped = capturer.inventory.EquippedWeapon;
+                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : capturer.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
+                CancelCaptureSelection();
+                capturer.inventory.Equip(weapon);
+                StartCoroutine(CaptureThenDeactivate(capturer, clickedEnemy, weapon));
+            }
+            return;
+        }
+
+        if (isSelectingDropTile)
+        {
+            Vector3Int clickedGrid = MapManager.Instance.WorldToGrid(worldPosition);
+            if(validDropTiles.Contains(clickedGrid))
+            {
+                PlayerUnit dropper = pendingDropUnit;
+                CancelDropSelection();
+                dropper.dropUnit(clickedGrid);
+                ActionMenuController.Instance.CompleteDrop();
             }
             return;
         }
@@ -226,6 +348,9 @@ public class InputController : MonoBehaviour
         }
     }
 
+    // 
+    // BEHAVIOR TREE FOR RIGHT CLICKS
+    // 
     private void OnRightClick(InputAction.CallbackContext context)
     {
         if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
@@ -236,6 +361,30 @@ public class InputController : MonoBehaviour
         {
             CancelTradeSelection();
             ActionMenuController.Instance.ReopenMenu();
+        }
+        else if (isSelectingDropTile)
+        {
+            CancelDropSelection();
+            ActionMenuController.Instance.ReopenMenu();
+        }
+        else if (isSelectingRescue)
+        {
+            CancelRescueSelection();
+            ActionMenuController.Instance.ReopenMenu();
+        }
+        else if (isSelectingAttack)
+        {
+            PlayerUnit unit = pendingAttackUnit;
+            CancelAttackSelection();
+            unit.mover.CancelMove();
+            currentMover = unit.mover;
+        }
+        else if (isSelectingCapture)
+        {
+            PlayerUnit unit = pendingCaptureUnit;
+            CancelCaptureSelection();
+            unit.mover.CancelMove();
+            currentMover = unit.mover;
         }
         else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
         {
@@ -249,13 +398,7 @@ public class InputController : MonoBehaviour
         {
             ActionMenuController.Instance.CancelMenu();
         }
-        else if (isSelectingAttack)
-        {
-            PlayerUnit unit = pendingAttackUnit;
-            CancelAttackSelection();
-            unit.mover.CancelMove();
-            currentMover = unit.mover;
-        }
+
         else if (currentMover != null)
         {
             currentMover = null;
@@ -287,7 +430,7 @@ public class InputController : MonoBehaviour
         if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
             || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
             || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
-            || isSelectingTradePartner)
+            || isSelectingTradePartner || isSelectingRescue || isSelectingCapture || isSelectingDropTile)
         {
             reticalTransform.gameObject.SetActive(false);
         }
@@ -604,5 +747,12 @@ public class InputController : MonoBehaviour
         }
 
         return (bestWeapon, bestTile);
+    }
+
+    private IEnumerator CaptureThenDeactivate(PlayerUnit capturer, EnemyUnit target, WeaponInstance weapon)
+    {
+        if (weapon != null)
+        yield return StartCoroutine(capturer.CaptureCoroutine(target, weapon));
+        if (capturer != null) capturer.SetInactive();
     }
 }
