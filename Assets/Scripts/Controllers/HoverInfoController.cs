@@ -43,7 +43,7 @@ public class HoverInfoController : MonoBehaviour
         var a = unit.unitAttributes;
         unitNameText.text = unit.gameObject.name;
         unitHpText.text = $"HP  {a.currentHealth} / {a.health}";
-        unitStatsText.text = $"Str {a.strength}\nSpd {a.speed}\nDef {a.defence}\nMag {a.magic}\nMov {a.movement}";
+        unitStatsText.text = $"Str {a.strength}\nSpd {a.speed}\nDef {a.defence}\nMag {a.magic}\nMov {a.movement}\nBld {a.build}";
         unitItemsText.text = BuildItemsText(unit.inventory);
         unitSection.gameObject.SetActive(true);
         terrainSection.gameObject.SetActive(false);

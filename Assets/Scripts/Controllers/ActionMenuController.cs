@@ -60,9 +60,9 @@ public class ActionMenuController : MonoBehaviour
         capturableEnemies = FindCapturableEnemies(pendingUnit);
         takeableAllies = FindTakeableAllies(pendingUnit);
 
-        rescueButton.gameObject.SetActive(pendingUnit.heldUnit == null && rescuableAllies.Count > 0);
+        rescueButton.gameObject.SetActive(pendingUnit.heldUnit == null && rescuableAllies.Count > 0 && pendingUnit.hasDroppedUnit == false);
         captureButton.gameObject.SetActive(pendingUnit.heldUnit == null && capturableEnemies.Count > 0);
-        takeButton.gameObject.SetActive(pendingUnit.heldUnit == null && takeableAllies.Count > 0);
+        takeButton.gameObject.SetActive(pendingUnit.heldUnit == null && takeableAllies.Count > 0 && pendingUnit.hasDroppedUnit == false);
         dropButton.gameObject.SetActive(pendingUnit.heldUnit != null && pendingUnit.hasPickedUpUnit == false && ValidDropTileExists(pendingUnit));
         heldTradeButton.gameObject.SetActive(pendingUnit.heldUnit != null);
     }
@@ -276,7 +276,7 @@ public class ActionMenuController : MonoBehaviour
         {
             foreach (MapObject mapObject in MapManager.Instance.GetObjectsAt(neighborCoord))
             {
-                if (mapObject is EnemyUnit enemy) enemies.Add(enemy);
+                if (mapObject is EnemyUnit enemy && enemy.unitAttributes.build < unit.unitAttributes.build) enemies.Add(enemy);
             }
         }
         return enemies;

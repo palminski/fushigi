@@ -11,8 +11,13 @@ public class InputController : MonoBehaviour
 
     public Tilemap tilemap;
     public Tilemap overlayTilemap;
+    public Tilemap enemyRangeOverlayTilemap;
     public Tile greenOverlay;
+    public Tile greenOverlayLight;
     public Tile redOverlay;
+    public Tile redOverlayLight;
+    public Tile redOverlayDark;
+    public HashSet<EnemyUnit> toggledEnemies = new HashSet<EnemyUnit>();
     public Mover currentMover;
 
     public Transform reticalTransform;
@@ -290,7 +295,7 @@ public class InputController : MonoBehaviour
             {
                 PlayerUnit dropper = pendingDropUnit;
                 CancelDropSelection();
-                dropper.dropUnit(clickedGrid);
+                dropper.DropUnit(clickedGrid);
                 ActionMenuController.Instance.CompleteDrop();
             }
             return;
@@ -369,15 +374,26 @@ public class InputController : MonoBehaviour
         {
             MapManager.Instance.RefreshMap();
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            PlayerUnit playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
 
-            if (playerUnit != null && playerUnit.canAct)
+            Unit hoveredUnit = objectsAtTile.OfType<Unit>().FirstOrDefault();
+            if (hoveredUnit == null) return;
+            if(hoveredUnit is PlayerUnit playerUnit)
+
+            // PlayerUnit playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
+
+            if (playerUnit.canAct)
             {
                 Mover mover = playerUnit.mover;
                 if (mover != null && !mover.isMoving)
                 {
                     currentMover = mover;
                 }
+                return;
+            }
+            if(hoveredUnit is EnemyUnit clickedEnemy)
+            {
+                if(!toggledEnemies.Remove(clickedEnemy)) toggledEnemies.Add(clickedEnemy);
+                clickedEnemy.UpdateIndicators();
             }
         }
     }
@@ -454,6 +470,8 @@ public class InputController : MonoBehaviour
 
         Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
         TileBase tile = tilemap.GetTile(gridPosition); // This is the currently highlighted tile
+
+        RefreshRangeOverlay(gridPosition);
 
         if (GameController.Instance.gamePhase == GamePhase.Player)
         {
@@ -585,6 +603,79 @@ public class InputController : MonoBehaviour
             }
 
         }
+    }
+
+    private (HashSet<Node> reachable, HashSet<Node>attackable) ComputeUnitRange(Unit unit)
+    {
+        List<Node>reachable = PathfinderController.Instance.GetReachableNodes(unit.GridPosition, unit.unitAttributes.movement, unit.unitAttributes.movementClass);
+        var reachableSet = new HashSet<Node>(reachable);
+        var attackableSet = new HashSet<Node>();
+
+        foreach (Node node in reachable)
+        {
+            foreach (ItemInstance item in unit.inventory.items)
+            {
+                if(item is not WeaponInstance weapon) continue;
+                foreach (Node attackNode in PathfinderController.Instance.GetAttackableTiles(tilemap.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
+                {
+                    attackableSet.Add(attackNode);
+                }
+            }
+        }
+        return (reachableSet, attackableSet);
+    }
+
+    private void DrawRangeOverlay(Tilemap rangeOverlayTilemap, HashSet<Node> reachableNodes, HashSet<Node> attackableNodes, Tile moveTile, Tile attackTile)
+    {
+        foreach (Node node in PathfinderController.Instance.GetAllNodes())
+        {
+            if(reachableNodes.Contains(node))
+            {
+                rangeOverlayTilemap.SetTile(node.gridPosition, moveTile);
+            }
+            else if (attackableNodes.Contains(node))
+            {
+                 rangeOverlayTilemap.SetTile(node.gridPosition, attackTile);
+            }
+        }
+    }
+
+    private void RefreshRangeOverlay(Vector3Int hoveredCoord)
+    {
+        enemyRangeOverlayTilemap.ClearAllTiles();
+
+        toggledEnemies.RemoveWhere(enemy => enemy == null || !enemy.gameObject.activeInHierarchy);
+
+        foreach(EnemyUnit enemy in toggledEnemies)
+        {
+            var (reachable, attackable) = ComputeUnitRange(enemy);
+            DrawRangeOverlay(enemyRangeOverlayTilemap, reachable, attackable, redOverlayDark, redOverlayDark);
+        }
+
+        if (!IsBaseIdleState()) return;
+        overlayTilemap.ClearAllTiles();
+
+        Unit hoveredUnit = MapManager.Instance.GetObjectsAt(hoveredCoord).OfType<Unit>().FirstOrDefault();
+        if (hoveredUnit == null) return;
+        bool hoveredUnitIsPlayer = hoveredUnit is PlayerUnit;
+        var (hoveredReachable, hoveredAttackable) = ComputeUnitRange(hoveredUnit);
+        DrawRangeOverlay(overlayTilemap, hoveredReachable, hoveredAttackable, hoveredUnitIsPlayer ? greenOverlayLight : redOverlayLight, redOverlayLight);
+
+    }
+
+    private bool IsBaseIdleState()
+    {
+        return !currentMover
+        && !(InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+        && !(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        && !(TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
+        && !isSelectingTradePartner
+        && !isSelectingRescue
+        && !isSelectingCapture
+        && !isSelectingDropTile
+        && !isSelectingTake
+        && !isSelectingAttack
+        ;
     }
 
     public void ClearLine()

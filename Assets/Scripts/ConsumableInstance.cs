@@ -7,9 +7,6 @@ public class ConsumableInstance : ItemInstance
 
     public void Use(Unit unit)
     {
-        unit.unitAttributes.currentHealth = Mathf.Min(
-            unit.unitAttributes.currentHealth + ConsumableData.healAmount,
-            unit.unitAttributes.health
-        );
+        unit.Heal(ConsumableData.healAmount);
     }
 }

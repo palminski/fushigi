@@ -21,6 +21,7 @@ public class PlayerUnit : Unit
     {
         canAct = true;
         hasPickedUpUnit = false;
+        hasDroppedUnit = false;
         spriteRenderer.color = baseColor;
     }
 
