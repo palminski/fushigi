@@ -35,6 +35,10 @@ public class InputController : MonoBehaviour
     private PlayerUnit pendingRescueUnit;
     private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
 
+    private bool isSelectingTake = false;
+    private PlayerUnit pendingTakeUnit;
+    private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
+
     private bool isSelectingCapture = false;
     private PlayerUnit pendingCaptureUnit;
     private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
@@ -125,6 +129,24 @@ public class InputController : MonoBehaviour
         isSelectingRescue = false;
         pendingRescueUnit = null;
         rescuableAllies.Clear();
+        overlayTilemap.ClearAllTiles();
+    }
+
+    public void StartTakeTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
+    {
+        pendingTakeUnit = unit;
+        takeableAllies = new List<PlayerUnit>(allies);
+        isSelectingTake = true;
+
+        overlayTilemap.ClearAllTiles();
+        foreach (PlayerUnit ally in takeableAllies)
+        overlayTilemap.SetTile(ally.GridPosition, greenOverlay);
+    }
+    public void CancelTakeSelection()
+    {
+        isSelectingTake = false;
+        pendingTakeUnit = null;
+        takeableAllies.Clear();
         overlayTilemap.ClearAllTiles();
     }
 
@@ -228,6 +250,19 @@ public class InputController : MonoBehaviour
                 PlayerUnit rescuer = pendingRescueUnit;
                 CancelRescueSelection();
                 ActionMenuController.Instance.CompleteRescue(rescuer, clickedAlly);
+            }
+            return;
+        }
+
+        if (isSelectingTake)
+        {
+            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
+            PlayerUnit clickedAlly = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
+            if (clickedAlly != null && takeableAllies.Contains(clickedAlly))
+            {
+                PlayerUnit rescuer = pendingTakeUnit;
+                CancelTakeSelection();
+                ActionMenuController.Instance.CompleteTake(rescuer, clickedAlly);
             }
             return;
         }
@@ -371,6 +406,11 @@ public class InputController : MonoBehaviour
             CancelRescueSelection();
             ActionMenuController.Instance.ReopenMenu();
         }
+        else if (isSelectingTake)
+        {
+            CancelTakeSelection();
+            ActionMenuController.Instance.ReopenMenu();
+        }
         else if (isSelectingAttack)
         {
             PlayerUnit unit = pendingAttackUnit;
@@ -429,7 +469,7 @@ public class InputController : MonoBehaviour
         if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
             || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
             || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
-            || isSelectingTradePartner || isSelectingRescue || isSelectingCapture || isSelectingDropTile)
+            || isSelectingTradePartner || isSelectingRescue || isSelectingCapture || isSelectingDropTile || isSelectingTake)
         {
             reticalTransform.gameObject.SetActive(false);
         }

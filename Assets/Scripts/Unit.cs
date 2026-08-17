@@ -10,6 +10,8 @@ public abstract class Unit : MapObject
     public Mover mover;
     public Inventory inventory;
 
+    public bool hasPickedUpUnit = false;
+
     public Unit heldUnit {get; private set;}
 
     protected virtual void Awake()
@@ -33,7 +35,16 @@ public abstract class Unit : MapObject
     public void PickUpUnit(Unit unit)
     {
         heldUnit = unit;
+        hasPickedUpUnit = true;
         unit.gameObject.SetActive(false);
+        MapManager.Instance.RefreshMap();
+    }
+
+    public void TakeUnitFromAlly(PlayerUnit ally)
+    {
+        if(ally.heldUnit == null) return;
+        heldUnit = ally.heldUnit;
+        ally.bequeathUnit();
         MapManager.Instance.RefreshMap();
     }
 
@@ -41,9 +52,15 @@ public abstract class Unit : MapObject
     {
         Unit dropped = heldUnit;
         heldUnit = null;
+        if(dropped is PlayerUnit droppedPlayer) droppedPlayer.SetInactive();
         dropped.gameObject.SetActive(true);
         dropped.transform.position = mover.tilemap.GetCellCenterWorld(gridPosition);
         MapManager.Instance.RefreshMap();
+    }
+
+    public void bequeathUnit()
+    {
+        heldUnit = null;
     }
 
     public void ReleaseHeld()

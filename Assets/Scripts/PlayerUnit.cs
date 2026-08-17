@@ -20,6 +20,7 @@ public class PlayerUnit : Unit
     public void SetActive()
     {
         canAct = true;
+        hasPickedUpUnit = false;
         spriteRenderer.color = baseColor;
     }
 

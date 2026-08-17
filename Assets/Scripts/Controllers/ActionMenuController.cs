@@ -16,11 +16,13 @@ public class ActionMenuController : MonoBehaviour
     [SerializeField] private Button rescueButton;
     [SerializeField] private Button captureButton;
     [SerializeField] private Button dropButton;
+    [SerializeField] private Button takeButton;
     [SerializeField] private Button heldTradeButton;
     private PlayerUnit pendingUnit;
     private List<EnemyUnit> attackableEnemies = new List<EnemyUnit>();
     private List<PlayerUnit> adjacentPlayers = new List<PlayerUnit>();
     private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
+    private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
     private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
     private bool canCancel = true;
     public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
@@ -56,9 +58,12 @@ public class ActionMenuController : MonoBehaviour
     {
         rescuableAllies = FindRescuableAllies(pendingUnit);
         capturableEnemies = FindCapturableEnemies(pendingUnit);
+        takeableAllies = FindTakeableAllies(pendingUnit);
+
         rescueButton.gameObject.SetActive(pendingUnit.heldUnit == null && rescuableAllies.Count > 0);
         captureButton.gameObject.SetActive(pendingUnit.heldUnit == null && capturableEnemies.Count > 0);
-        dropButton.gameObject.SetActive(pendingUnit.heldUnit != null);
+        takeButton.gameObject.SetActive(pendingUnit.heldUnit == null && takeableAllies.Count > 0);
+        dropButton.gameObject.SetActive(pendingUnit.heldUnit != null && pendingUnit.hasPickedUpUnit == false && ValidDropTileExists(pendingUnit));
         heldTradeButton.gameObject.SetActive(pendingUnit.heldUnit != null);
     }
 
@@ -122,9 +127,9 @@ public class ActionMenuController : MonoBehaviour
     }
     public void OnRescueClicked()
     {
-        if(rescuableAllies.Count == 0) return;
+        if (rescuableAllies.Count == 0) return;
         menuPanel.SetActive(false);
-        if(rescuableAllies.Count == 1)
+        if (rescuableAllies.Count == 1)
         {
             CompleteRescue(pendingUnit, rescuableAllies[0]);
         }
@@ -133,16 +138,29 @@ public class ActionMenuController : MonoBehaviour
             InputController.Instance.StartRescueTargetSelection(pendingUnit, rescuableAllies);
         }
     }
+    public void OnTakeClicked()
+    {
+        if(takeableAllies.Count == 0) return;
+        menuPanel.SetActive(false);
+        if (takeableAllies.Count == 1)
+        {
+            CompleteTake(pendingUnit, takeableAllies[0]);
+        }
+        else
+        {
+            InputController.Instance.StartTakeTargetSelection(pendingUnit, takeableAllies);
+        }
+    }
     public void OnCaptureClicked()
     {
-        if(capturableEnemies.Count == 0) return;
+        if (capturableEnemies.Count == 0) return;
         InputController.Instance.StartCaptureTargetSelection(pendingUnit, capturableEnemies);
         menuPanel.SetActive(false);
         pendingUnit = null;
     }
     public void OnDropClicked()
     {
-        if(pendingUnit.heldUnit == null) return;
+        if (pendingUnit.heldUnit == null) return;
         if (pendingUnit.heldUnit is PlayerUnit)
         {
             menuPanel.SetActive(false);
@@ -158,7 +176,7 @@ public class ActionMenuController : MonoBehaviour
     }
     public void OnHeldTradeClicked()
     {
-        if(pendingUnit.heldUnit == null) return;
+        if (pendingUnit.heldUnit == null) return;
         menuPanel.SetActive(false);
         TradeMenuController.Instance.Show(pendingUnit, pendingUnit.heldUnit);
     }
@@ -173,6 +191,17 @@ public class ActionMenuController : MonoBehaviour
     public void CompleteRescue(PlayerUnit rescuer, PlayerUnit ally)
     {
         rescuer.PickUpUnit(ally);
+        RefreshUnitHoldButtons();
+        ReopenMenuLocked();
+    }
+
+    public void CompleteTake(PlayerUnit rescuer, PlayerUnit ally)
+    {
+        //ally refers to the unit holding the ally to be taken
+        if(ally.heldUnit != null)
+        {
+            rescuer.TakeUnitFromAlly(ally);
+        }
         RefreshUnitHoldButtons();
         ReopenMenuLocked();
     }
@@ -224,6 +253,16 @@ public class ActionMenuController : MonoBehaviour
         return result;
     }
 
+    private List<PlayerUnit> FindTakeableAllies(PlayerUnit unit)
+    {
+        var result = new List<PlayerUnit>();
+        foreach (PlayerUnit otherUnit in FindAdjacentPlayers(unit))
+        {
+            if (otherUnit.heldUnit != null && unit.unitAttributes.build > otherUnit.heldUnit.unitAttributes.build) result.Add(otherUnit);
+        }
+        return result;
+    }
+
     private List<EnemyUnit> FindCapturableEnemies(PlayerUnit unit)
     {
         var enemies = new List<EnemyUnit>();
@@ -241,5 +280,18 @@ public class ActionMenuController : MonoBehaviour
             }
         }
         return enemies;
+    }
+
+    private bool ValidDropTileExists(PlayerUnit unit)
+    {
+        Vector3Int position = unit.GridPosition;
+        Vector3Int[] neighborCoords = { position + Vector3Int.up, position + Vector3Int.down, position + Vector3Int.right, position + Vector3Int.left };
+        foreach (Vector3Int neighborCoord in neighborCoords)
+        {
+            bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is Unit);
+            bool walkable = PathfinderController.Instance.GetNode(neighborCoord)?.walkable ?? false;
+            if(!occupied && walkable) return true;
+        }
+        return false;
     }
 }
