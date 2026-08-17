@@ -13,6 +13,9 @@ public class Mover : MonoBehaviour
     private Vector3 currentFinalTarget;
 
     public PlayerUnit playerUnit;
+    private Vector3 startWorldPosition;
+    private EnemyUnit queuedAttackTarget;
+    private WeaponInstance queuedAttackWeapon;
 
     void Awake()
     {
@@ -23,6 +26,7 @@ public class Mover : MonoBehaviour
     {
         if (!isMoving)
         {
+            startWorldPosition = transform.position;
             StartCoroutine(FollowPath(path, moveStat));
             return;
         }
@@ -55,13 +59,39 @@ public class Mover : MonoBehaviour
                 transform.position = targetPosition;
             }
             isMoving = false;
-            if (playerUnit) playerUnit.SetInactive();
             PathfinderController.Instance.GenerateGrid();
+            if (queuedAttackTarget != null)
+            {
+                EnemyUnit target = queuedAttackTarget;
+                WeaponInstance weapon = queuedAttackWeapon;
+                queuedAttackTarget = null;
+                queuedAttackWeapon = null;
+
+                yield return StartCoroutine(playerUnit.AttackCoroutine(target, weapon));
+                if (playerUnit != null) playerUnit.SetInactive();
+            } 
+            else if (playerUnit != null)
+            {
+                ActionMenuController.Instance.ShowMenu(playerUnit);
+            }
         }
     }
 
     public void DeactivatePlayer()
     {
-        if (playerUnit) playerUnit.SetInactive();
+        startWorldPosition = transform.position;
+        if (playerUnit) ActionMenuController.Instance.ShowMenu(playerUnit);
+    }
+
+    public void CancelMove()
+    {
+        transform.position = startWorldPosition;
+        PathfinderController.Instance.GenerateGrid();
+    }
+
+    public void QueueAttack(EnemyUnit target, WeaponInstance weapon)
+    {
+        queuedAttackTarget = target;
+        queuedAttackWeapon = weapon;
     }
 }

@@ -50,22 +50,24 @@ public class GameController : MonoBehaviour
 
     private IEnumerator MoveEnemies()
     {
-        var enemyUnits = FindObjectsOfType<EnemyUnit>();
+        var enemyUnits = FindObjectsByType<EnemyUnit>(FindObjectsSortMode.None);
         foreach (EnemyUnit enemyUnit in enemyUnits)
         {
+            if (enemyUnit == null) continue;
             enemyUnit.PerformTurnMovement();
-            while (enemyUnit.mover.isMoving)
+            while (enemyUnit != null && enemyUnit.mover.isMoving)
             {
                 yield return null;
             }
-            enemyUnit.PerformTurnAction();
+            if (enemyUnit != null)
+                yield return StartCoroutine(enemyUnit.PerformTurnActionCoroutine());
         }
         ChangePhase();
     }
 
     public void ChangePhase()
     {
-        var playerUnits = FindObjectsOfType<PlayerUnit>();
+        var playerUnits = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
         foreach (PlayerUnit playerUnit in playerUnits)
         {
             playerUnit.SetActive();
@@ -84,7 +86,7 @@ public class GameController : MonoBehaviour
     public bool CheckIfAllPlayersHaveActed()
     {
 
-        var playerUnits = FindObjectsOfType<PlayerUnit>();
+        var playerUnits = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
         foreach (PlayerUnit playerUnit in playerUnits)
         {
             if (playerUnit.canAct)

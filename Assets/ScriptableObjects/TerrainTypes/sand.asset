@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78867e883a6e3eacf9c88d7a8e161df8, type: 3}
   m_Name: sand
   m_EditorClassIdentifier: Assembly-CSharp::TerrainType
+  displayName: Sand
+  defenceBonus: 0
+  avoidBonus: 0
   classCosts:
   - movementClass: 0
     cost: 2

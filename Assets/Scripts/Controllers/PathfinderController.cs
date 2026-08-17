@@ -220,6 +220,11 @@ public class PathfinderController : MonoBehaviour
         return nodes.TryGetValue(convertedPosition, out var node) ? node : null;
     }
 
+    public Node GetNode(Vector3Int gridPosition)
+    {
+        return nodes.TryGetValue(gridPosition, out var node) ? node : null;
+    }
+
 
     // =======================================================================================================================================================================================
 

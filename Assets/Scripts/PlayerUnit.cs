@@ -1,27 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-[RequireComponent(typeof(UnitAttributes))]
-public class PlayerUnit : MapObject
+public class PlayerUnit : Unit
 {
-    public Mover mover;
-
-    public bool canAct = true;
-
-    private SpriteRenderer spriteRenderer;
-
-    private Color baseColor;
-
-    public UnitAttributes unitAttributes;
-    // Start is called before the first frame update
-    void Awake()
-    {
-        unitAttributes = GetComponent<UnitAttributes>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        baseColor = spriteRenderer.color;
-        mover = GetComponent<Mover>();
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -40,8 +20,21 @@ public class PlayerUnit : MapObject
     public void SetActive()
     {
         canAct = true;
+        hasPickedUpUnit = false;
         spriteRenderer.color = baseColor;
-
     }
-    
+
+    public IEnumerator AttackCoroutine(EnemyUnit target, WeaponInstance weapon)
+    {
+        if (weapon == null) yield break;
+        CombatResult result = CombatCalculator.Resolve(this, target, weapon);
+        CombatScreenController.Instance.Show(result);
+        yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
+        WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
+        if (result.totalDamageToDefender > 0 && target != null)
+            target.TakeDamage(result.totalDamageToDefender);
+        for (int i = 0; i < result.defenderSwings; i++) defWeapon?.Use();
+        if (result.totalDamageToAttacker > 0) TakeDamage(result.totalDamageToAttacker);
+        for (int i = 0; i < result.attackerSwings; i++) weapon.Use();
+    }
 }

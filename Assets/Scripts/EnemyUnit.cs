@@ -2,42 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Tilemaps;
 
-[RequireComponent(typeof(UnitAttributes))]
-public class EnemyUnit : MapObject
+public class EnemyUnit : Unit
 {
-    public Tilemap tilemap;
 
-    [HideInInspector] public Mover mover;
-
-    public bool canAct = true;
-
-    private SpriteRenderer spriteRenderer;
-
-    private UnitAttributes unitAttributes;
-
-    private Color baseColor;
-    // Start is called before the first frame update
-    void Awake()
-    {
-        unitAttributes = GetComponent<UnitAttributes>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        baseColor = spriteRenderer.color;
-        mover = GetComponent<Mover>();
-    }
-
+    private Unit plannedTarget;
+    private WeaponInstance plannedWeapon;
     // Update is called once per frame
     void Update()
     {
-
+        
     }
 
     public void PerformTurnMovement()
     {
         MapManager.Instance.RefreshMap();
         Node targetNode = FindTargetTile();
+
         if (targetNode != null)
         {
             List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition, unitAttributes.movementClass);
@@ -45,71 +26,91 @@ public class EnemyUnit : MapObject
         }
     }
 
-    public void PerformTurnAction()
+    public IEnumerator PerformTurnActionCoroutine()
     {
-        List<Node> attackableNodes = PathfinderController.Instance.GetAttackableTiles(mover.transform.position); //Attack Range
-        
-        PlayerUnit playerUnit = null;
-        foreach (Node attackableNode in attackableNodes)
-        {
-            print(attackableNode.gridPosition);
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(attackableNode.gridPosition);
-            playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault() ?? playerUnit;
-        }
-        if (playerUnit != null)
-        {
-            AttackUnit(playerUnit);
-        }
+        if (plannedTarget == null || plannedWeapon == null) yield break;
+        yield return StartCoroutine(AttackCoroutine(plannedTarget, plannedWeapon));
     }
 
     private Node FindTargetTile()
     {
         List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement, unitAttributes.movementClass);
-        var playerUnits = FindObjectsOfType<PlayerUnit>();
-        List<Node> shortestPath = null;
+        var playerUnits = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
+
+        int bestScore = int.MinValue;
         Node targetNode = null;
+
         foreach (Node reachableNode in reachableNodes)
         {
             List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(reachableNode.gridPosition);
             bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || (obj is EnemyUnit enemyUnit && enemyUnit != this));
             if (!validTile) continue;
+
             foreach (PlayerUnit playerUnit in playerUnits)
             {
+                Vector3Int nodePos = reachableNode.gridPosition;
+                Vector3Int playerPos = playerUnit.GridPosition;
+                int distance = Mathf.Abs(nodePos.x - playerPos.x) + Mathf.Abs(nodePos.y - playerPos.y);
 
-                Vector3 targetGridPoition = playerUnit.transform.position;
-                Vector3 thisGridPosition = reachableNode.gridPosition;
-
-                List<Node> path = PathfinderController.Instance.FindPath(thisGridPosition, targetGridPoition, unitAttributes.movementClass, true);
-
-                if (shortestPath == null || shortestPath.Count > path.Count)
+                foreach (ItemInstance item in inventory.items)
                 {
-                    shortestPath = path;
-                    targetNode = reachableNode;
+                    if (item is not WeaponInstance weapon) continue;
+                    if (distance < weapon.minRange || distance > weapon.maxRange) continue;
+
+                    CombatPreview preview = CombatCalculator.Preview(this, playerUnit, weapon, reachableNode.gridPosition);
+
+                    int score = preview.damageDealt;
+                    if (preview.killsDefender) score += 1000;
+                    if (!preview.defenderCanCounter) score += 100;
+
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        targetNode = reachableNode;
+                        plannedTarget = playerUnit;
+                        plannedWeapon = weapon;
+                    }
                 }
             }
         }
+        if (targetNode == null)
+        {
+            int closestDistance = int.MaxValue;
+            foreach (Node reachableNode in reachableNodes)
+            {
+                List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(reachableNode.gridPosition);
+                bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || (obj is EnemyUnit enemyUnit && enemyUnit != this));
+                if (!validTile) continue;
+
+                foreach (PlayerUnit playerUnit in playerUnits)
+                {
+                    Vector3Int nodePos = reachableNode.gridPosition;
+                    Vector3Int playerPos = playerUnit.GridPosition;
+                    int distance = Mathf.Abs(nodePos.x - playerPos.x) + Mathf.Abs(nodePos.y - playerPos.y);
+
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        targetNode = reachableNode;
+                    }
+                }
+            }
+        }
+
         return targetNode;
     }
 
-    public void AttackUnit(PlayerUnit playerUnit)
+    public IEnumerator AttackCoroutine(Unit target, WeaponInstance weapon)
     {
-        int damage = Mathf.Abs(playerUnit.unitAttributes.defence - unitAttributes.strength); // Eventually this will also have weapon power built into it
-        playerUnit.unitAttributes.Damage(damage);
+        if (weapon == null) yield break;
+        CombatResult result = CombatCalculator.Resolve(this, target, weapon);
+        CombatScreenController.Instance.Show(result);
+        yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
+        WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
+        if (result.totalDamageToDefender > 0 && target != null)
+            target.TakeDamage(result.totalDamageToDefender);
+        for (int i = 0; i < result.defenderSwings; i++) defWeapon?.Use();
+        if (result.totalDamageToAttacker > 0) TakeDamage(result.totalDamageToAttacker);
+        for (int i = 0; i < result.attackerSwings; i++) weapon.Use();
     }
-
-    // public void SetInactive()
-    // {
-    //     canAct = false;
-    //     float lumunence = 0.299f * baseColor.r + 0.587f * baseColor.g + 0.114f * baseColor.b;
-    //     Color inactiveColor = new Color(lumunence, lumunence, lumunence, 0.5f);
-    //     spriteRenderer.color = inactiveColor;
-    //     GameController.Instance.CheckAndChangePhase(); //Temporary for now
-    // }
-
-    // public void SetActive()
-    // {
-    //     canAct = true;
-    //     spriteRenderer.color = baseColor;
-
-    // }
 }

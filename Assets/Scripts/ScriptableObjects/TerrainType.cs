@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Fushigi/TerrainType", fileName = "NewTerrainType")]
+[CreateAssetMenu(menuName = "Scriptable Objects/TerrainType", fileName = "NewTerrainType")]
 public class TerrainType : ScriptableObject
 {
     [System.Serializable]
@@ -10,6 +10,9 @@ public class TerrainType : ScriptableObject
         public int cost;
         public bool impassable;
     }
+        public string displayName = "Terrain";
+        public int defenceBonus;
+        public int avoidBonus;
 
     public ClassCost[] classCosts;
 
