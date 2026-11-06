@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,7 +53,7 @@ public class UnitSelectedState : InputState
         forecast.Clear();
         HoverInfoPanel.Instance?.ShowUnit(Mover.playerUnit);
 
-        bool onMap = inputController.tilemap.GetTile(hoveredCell) != null;
+        bool onMap = LevelMap.Instance.HasGround(hoveredCell);
         if (onMap && ShowPathTo(hoveredCell)) return;
 
         MapOverlay.Instance.HideReticle();
@@ -76,11 +75,9 @@ public class UnitSelectedState : InputState
 
     public override void OnClick(Vector3Int cell)
     {
-        TileBase tile = inputController.tilemap.GetTile(cell);
-
         List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(cell);
 
-        Vector3Int playerGridPos = inputController.tilemap.WorldToCell(Mover.transform.position);
+        Vector3Int playerGridPos = LevelMap.Instance.WorldToCell(Mover.transform.position);
         
         if (playerGridPos == cell)
         {
@@ -113,7 +110,7 @@ public class UnitSelectedState : InputState
         }
 
         bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
-        if (validTile && tile != null)
+        if (validTile && LevelMap.Instance.HasGround(cell))
         {
 
             MovementClass movementClass = Mover.playerUnit.unitAttributes.movementClass;

@@ -9,16 +9,10 @@ public class Pathfinder : MonoBehaviour
     // also handles functions related to getting information about the grid and nodes, such as returning a node from a position, or calculating the range that a unit can move.
     public static Pathfinder Instance { get; private set; }
 
-    [System.Serializable]
-    public struct TerrainLayer
-    {
-        public Tilemap tilemap;
-        public TerrainType terrainType;
-    }
-
-    public Tilemap walkableTilemap;
-    public List<TerrainLayer> terrainLayers;
     private Dictionary<Vector3Int, Node> nodes;
+
+    // The level's walkable tilemap, which also defines the grid
+    private Tilemap Ground => LevelMap.Instance.Ground;
 
 
     void Awake()
@@ -46,8 +40,8 @@ public class Pathfinder : MonoBehaviour
     public List<Node> FindPath(Vector3 startPosition, Vector3 targetPosition, MovementClass movementClass, bool allowIllegalTarget = false)
     {
         GenerateGrid();
-        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
-        Vector3Int targetGridPosition = walkableTilemap.WorldToCell(targetPosition);
+        Vector3Int startGridPosition = Ground.WorldToCell(startPosition);
+        Vector3Int targetGridPosition = Ground.WorldToCell(targetPosition);
 
         Node startingNode = GetNode(startGridPosition);
         Node targetNode = GetNode(targetGridPosition);
@@ -108,7 +102,7 @@ public class Pathfinder : MonoBehaviour
     public List<Node> GetReachableNodes(Vector3 startPosition, int range, MovementClass movementClass)
     {
         GenerateGrid();
-        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
+        Vector3Int startGridPosition = Ground.WorldToCell(startPosition);
         List<Node> reachable = new List<Node>();
 
         var startingNode = GetNode(startGridPosition);
@@ -157,7 +151,7 @@ public class Pathfinder : MonoBehaviour
 
     public List<Node> GetAttackableTiles(Vector3 startPosition, int minRange = 1, int maxRange = 1)
     {
-        Vector3Int startGridPosition = walkableTilemap.WorldToCell(startPosition);
+        Vector3Int startGridPosition = Ground.WorldToCell(startPosition);
         if (GetNode(startGridPosition) == null) return new List<Node>();
 
         List<Node> attackable = new List<Node>();
@@ -188,7 +182,7 @@ public class Pathfinder : MonoBehaviour
             foreach (ItemInstance item in unit.inventory.items)
             {
                 if(item is not WeaponInstance weapon) continue;
-                foreach (Node attackNode in GetAttackableTiles(walkableTilemap.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
+                foreach (Node attackNode in GetAttackableTiles(Ground.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
                 {
                     attackableSet.Add(attackNode);
                 }
@@ -236,7 +230,7 @@ public class Pathfinder : MonoBehaviour
     // Given a position returns the node associated with that position
     public Node GetNode(Vector3 position)
     {
-        Vector3Int convertedPosition = walkableTilemap.WorldToCell(position);
+        Vector3Int convertedPosition = Ground.WorldToCell(position);
         return nodes.TryGetValue(convertedPosition, out var node) ? node : null;
     }
 
@@ -277,8 +271,8 @@ public class Pathfinder : MonoBehaviour
     public void GenerateGrid()
     {
         MapManager.Instance.RefreshMap();
-        walkableTilemap.CompressBounds();
-        BoundsInt bounds = walkableTilemap.cellBounds;
+        Ground.CompressBounds();
+        BoundsInt bounds = Ground.cellBounds;
 
         int width = bounds.size.x;
         int height = bounds.size.y;
@@ -294,12 +288,12 @@ public class Pathfinder : MonoBehaviour
 
                 var objectsAtTile = MapManager.Instance.GetObjectsAt(position);
 
-                bool walkable = walkableTilemap.HasTile(position)
+                bool walkable = Ground.HasTile(position)
                     && !(GamePhaseManager.Instance.gamePhase == GamePhase.Player && objectsAtTile.Any(obj => obj is EnemyUnit))
                     && !(GamePhaseManager.Instance.gamePhase == GamePhase.Enemy && objectsAtTile.Any(obj => obj is PlayerUnit));
 
                 TerrainType terrainType = null;
-                foreach (var layer in terrainLayers)
+                foreach (var layer in LevelMap.Instance.TerrainLayers)
                 {
                     if (layer.tilemap != null && layer.tilemap.HasTile(position))
                     {

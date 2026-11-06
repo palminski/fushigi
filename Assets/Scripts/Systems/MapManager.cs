@@ -1,13 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 //Manages objects at locations and allows translation between world and grid coordinates
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance { get; private set; }
-    [field: SerializeField] public Tilemap GroundTilemap { get; private set; }
 
     private Dictionary<Vector3Int, List<MapObject>> gridObjects = new();
 
@@ -51,13 +49,13 @@ public class MapManager : MonoBehaviour
 
     public Vector3Int WorldToGrid(Vector3 worldPosition)
     {
-        //If tilemap no longer exists we can just clear the grid objects
-        if (GroundTilemap == null)
+        //If the level map no longer exists (e.g. the scene is unloading) we can just clear the grid objects
+        if (LevelMap.Instance == null)
         {
             gridObjects.Clear();
             return Vector3Int.zero;
         }
-        return GroundTilemap.WorldToCell(worldPosition);
+        return LevelMap.Instance.WorldToCell(worldPosition);
     }
 
     public void RefreshMap()

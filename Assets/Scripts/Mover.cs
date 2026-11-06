@@ -1,12 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public class Mover : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
-    public Tilemap tilemap;
 
     [HideInInspector] public bool isMoving = false;
 
@@ -41,11 +39,11 @@ public class Mover : MonoBehaviour
             isMoving = true;
             if (path.Count > 0)
             {
-                currentFinalTarget = tilemap.GetCellCenterWorld(path[path.Count - 1].gridPosition);
+                currentFinalTarget = LevelMap.Instance.CellCenter(path[path.Count - 1].gridPosition);
             }
             foreach (Node node in path)
             {
-                Vector3 targetPosition = tilemap.GetCellCenterWorld(node.gridPosition);
+                Vector3 targetPosition = LevelMap.Instance.CellCenter(node.gridPosition);
                 while (Vector3.Distance(transform.position, targetPosition) > 0.01f)
                 {
                     transform.position = Vector3.MoveTowards(

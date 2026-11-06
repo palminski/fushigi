@@ -15805,7 +15805,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &605224778
@@ -16205,6 +16204,7 @@ GameObject:
   m_Component:
   - component: {fileID: 690422862}
   - component: {fileID: 690422861}
+  - component: {fileID: 690422863}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -16246,6 +16246,22 @@ Transform:
   - {fileID: 941164976}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &690422863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 690422860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfebe74b1261dfe1f9bc4ed5a1b32490, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelMap
+  <Ground>k__BackingField: {fileID: 582902904}
+  <TerrainLayers>k__BackingField:
+  - tilemap: {fileID: 1796223357}
+    terrainType: {fileID: 11400000, guid: 54140a98f09f17018a54f8c70adc8199, type: 2}
 --- !u!1 &702982031
 GameObject:
   m_ObjectHideFlags: 0
@@ -16941,7 +16957,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &839472959
@@ -18166,10 +18181,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64d3f0224bc07a042a8d71b29c2800e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkableTilemap: {fileID: 582902904}
-  terrainLayers:
-  - tilemap: {fileID: 1796223357}
-    terrainType: {fileID: 11400000, guid: 54140a98f09f17018a54f8c70adc8199, type: 2}
 --- !u!114 &965667713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18182,21 +18193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5f9d33d8d895ac4a8b1c84382958ba3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilemap: {fileID: 582902904}
-  overlayTilemap: {fileID: 60756818}
-  enemyRangeOverlayTilemap: {fileID: 1747014404}
-  greenOverlay: {fileID: 11400000, guid: a4195d0fae0f6d24dadd40f561497839, type: 2}
-  greenOverlayLight: {fileID: 11400000, guid: 00403bbbf6fbad4359c289f32593c616, type: 2}
-  redOverlay: {fileID: 11400000, guid: 5d1f4f4369108024295b7cb92ee6e11f, type: 2}
-  redOverlayLight: {fileID: 11400000, guid: 530fb72f92c335dd9bdb1ba5252001a8, type: 2}
-  redOverlayDark: {fileID: 11400000, guid: 8bd320d59e40fc3caae64e6a8e54f713, type: 2}
-  reticalTransform: {fileID: 1478333820}
-  lineRenderer: {fileID: 1564213305}
   currentStateName: None
-  lastForecastTarget: {fileID: 0}
-  forecastWeapon:
-    data: {fileID: 0}
-    currentDurability: 0
 --- !u!114 &965667714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18209,7 +18206,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 305280325d0bd3d4e9b29e11de4f7ea1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <GroundTilemap>k__BackingField: {fileID: 582902904}
 --- !u!114 &965667715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18335,7 +18331,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &966585047
@@ -19036,7 +19031,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1005698026
@@ -20254,7 +20248,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1281069179
@@ -20927,7 +20920,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1397598552
@@ -39515,7 +39507,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1496714241
@@ -39867,7 +39858,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!61 &1557982981
@@ -40587,7 +40577,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1600031628
@@ -40950,7 +40939,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1621375042
@@ -41501,7 +41489,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1697729115
@@ -43377,7 +43364,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 25
-  tilemap: {fileID: 582902904}
   isMoving: 0
   playerUnit: {fileID: 0}
 --- !u!212 &1919589645

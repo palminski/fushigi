@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Tilemaps;
 
 public class InputController : MonoBehaviour
 {
     public static InputController Instance { get; private set; }
-    public Tilemap tilemap;
     public HashSet<EnemyUnit> toggledEnemies = new HashSet<EnemyUnit>();
     private GameInput inputActions;
     private InputState currentState;
@@ -210,7 +208,7 @@ public class InputController : MonoBehaviour
         Vector2 screenPosition = Mouse.current.position.ReadValue();
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
 
-        Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
+        Vector3Int gridPosition = LevelMap.Instance.WorldToCell(worldPosition);
 
         RefreshDangerZones();
 

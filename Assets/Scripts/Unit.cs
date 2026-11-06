@@ -104,7 +104,7 @@ public abstract class Unit : MapObject
         heldUnit = null;
         if(dropped is PlayerUnit droppedPlayer) droppedPlayer.SetInactive();
         dropped.gameObject.SetActive(true);
-        dropped.transform.position = mover.tilemap.GetCellCenterWorld(gridPosition);
+        dropped.transform.position = LevelMap.Instance.CellCenter(gridPosition);
         MapManager.Instance.RefreshMap();
         UpdateIndicators();
 
