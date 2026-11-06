@@ -2,9 +2,9 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class HoverInfoController : MonoBehaviour
+public class HoverInfoPanel : MonoBehaviour
 {
-    public static HoverInfoController Instance { get; private set; }
+    public static HoverInfoPanel Instance { get; private set; }
 
     
 

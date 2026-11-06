@@ -20,7 +20,7 @@ public class IdleState : InputState
             return;
         }
 
-        var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(hoveredUnit);
+        var (reachable, attackable) = Pathfinder.Instance.GetUnitRange(hoveredUnit);
         OverlayColor moveColor = hoveredUnit is PlayerUnit ? OverlayColor.GreenLight : OverlayColor.RedLight;
         MapOverlay.Instance.ShowRange(reachable,attackable,moveColor,OverlayColor.Red);
     }
@@ -28,9 +28,9 @@ public class IdleState : InputState
     private void UpdateHoverInfo(Vector3Int hoveredCell)
     {
         // The hover panel stays hidden during the enemy's turn
-        if (GameController.Instance.gamePhase == GamePhase.Enemy)
+        if (GamePhaseManager.Instance.gamePhase == GamePhase.Enemy)
         {
-            HoverInfoController.Instance?.Hide();
+            HoverInfoPanel.Instance?.Hide();
             return;
         }
 
@@ -38,7 +38,7 @@ public class IdleState : InputState
         PlayerUnit movingUnit = Object.FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None).FirstOrDefault(p => p.mover != null && p.mover.isMoving);
         if (movingUnit != null)
         {
-            HoverInfoController.Instance?.ShowUnit(movingUnit);
+            HoverInfoPanel.Instance?.ShowUnit(movingUnit);
             return;
         }
 

@@ -423,7 +423,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnDropClicked
         m_Mode: 1
         m_Arguments:
@@ -3541,7 +3541,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnAttackClicked
         m_Mode: 1
         m_Arguments:
@@ -3864,7 +3864,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnTradeClicked
         m_Mode: 1
         m_Arguments:
@@ -4011,7 +4011,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnHeldTradeClicked
         m_Mode: 1
         m_Arguments:
@@ -4344,7 +4344,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48b004b1b8f0284b196494525ed20bc1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ActionMenuController
+  m_EditorClassIdentifier: Assembly-CSharp::ActionMenu
   menuPanel: {fileID: 1594967150}
   attackButton: {fileID: 106754736}
   inventoryButton: {fileID: 1817724958}
@@ -4457,7 +4457,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9cdc079b2430fbdb786723d29fd7cc71, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoverInfoController
+  m_EditorClassIdentifier: Assembly-CSharp::HoverInfoPanel
   unitSection: {fileID: 1878179956}
   unitNameText: {fileID: 548931555}
   unitHpText: {fileID: 1589496062}
@@ -4479,7 +4479,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9fc3f65dd5b1cc6b79ba45a3d1a5be2a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CombatScreenController
+  m_EditorClassIdentifier: Assembly-CSharp::CombatScreen
   panel: {fileID: 522384985}
   combatLogText: {fileID: 2133935599}
 --- !u!114 &266609546
@@ -4493,7 +4493,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 005e19b33d5eb6d00af3259d83edaa07, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CombatForecastController
+  m_EditorClassIdentifier: Assembly-CSharp::CombatForecastPanel
   panel: {fileID: 418202231}
   playerNameText: {fileID: 959780681}
   playerWeaponText: {fileID: 1906344182}
@@ -4514,7 +4514,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce61f7a2341fd6a6180ee6b32a669fa0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryMenuController
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryMenu
   menuPanel: {fileID: 436252128}
   itemListParent: {fileID: 436252129}
   itemRowPrefab: {fileID: 3492014891184969619, guid: a9a43d7b77bb9a0d4a82d5f64d3a0fe2, type: 3}
@@ -4533,7 +4533,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 836d1d9e3e794328aa53f5ac262f5cdb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TradeMenuController
+  m_EditorClassIdentifier: Assembly-CSharp::TradeMenu
   menuPanel: {fileID: 852140233}
   leftItemParent: {fileID: 772583513}
   rightItemParent: {fileID: 1047727243}
@@ -6450,7 +6450,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnRescueClicked
         m_Mode: 1
         m_Arguments:
@@ -15677,7 +15677,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnTakeClicked
         m_Mode: 1
         m_Arguments:
@@ -17526,7 +17526,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnWaitClicked
         m_Mode: 1
         m_Arguments:
@@ -18801,7 +18801,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnCaptureClicked
         m_Mode: 1
         m_Arguments:
@@ -42887,7 +42887,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609539}
-        m_TargetAssemblyTypeName: ActionMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
         m_MethodName: OnInventoryClicked
         m_Mode: 1
         m_Arguments:
@@ -44386,7 +44386,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609547}
-        m_TargetAssemblyTypeName: InventoryMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: InventoryMenu, Assembly-CSharp
         m_MethodName: OnEquipClicked
         m_Mode: 1
         m_Arguments:
@@ -44442,7 +44442,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609547}
-        m_TargetAssemblyTypeName: InventoryMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: InventoryMenu, Assembly-CSharp
         m_MethodName: OnUseClicked
         m_Mode: 1
         m_Arguments:
@@ -45086,7 +45086,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 266609547}
-        m_TargetAssemblyTypeName: InventoryMenuController, Assembly-CSharp
+        m_TargetAssemblyTypeName: InventoryMenu, Assembly-CSharp
         m_MethodName: OnDiscardClicked
         m_Mode: 1
         m_Arguments:

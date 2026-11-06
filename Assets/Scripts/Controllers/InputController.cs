@@ -94,22 +94,22 @@ public class InputController : MonoBehaviour
     public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
     {
         ChangeState(new TargetSelectState(TargetKind.Trade, unit, CellsOf(partners), OverlayColor.Green,
-            onConfirm: cell => TradeMenuController.Instance.Show(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+            onConfirm: cell => TradeMenu.Instance.Show(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenu.Instance.ReopenMenu()));
     }
 
     public void StartRescueTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
     {
         ChangeState(new TargetSelectState(TargetKind.Rescue, unit, CellsOf(allies), OverlayColor.Green,
-            onConfirm: cell => ActionMenuController.Instance.CompleteRescue(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+            onConfirm: cell => ActionMenu.Instance.CompleteRescue(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenu.Instance.ReopenMenu()));
     }
 
     public void StartTakeTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
     {
         ChangeState(new TargetSelectState(TargetKind.Take, unit, CellsOf(allies), OverlayColor.Green,
-            onConfirm: cell => ActionMenuController.Instance.CompleteTake(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+            onConfirm: cell => ActionMenu.Instance.CompleteTake(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenu.Instance.ReopenMenu()));
     }
 
     public void StartDropTileSelection(PlayerUnit unit)
@@ -120,7 +120,7 @@ public class InputController : MonoBehaviour
         foreach (Vector3Int neighborCoord in neighborCoords)
         {
             bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is PlayerUnit || o is EnemyUnit);
-            bool walkable = PathfinderController.Instance.GetNode(neighborCoord)?.walkable ?? false;
+            bool walkable = Pathfinder.Instance.GetNode(neighborCoord)?.walkable ?? false;
             if (!occupied && walkable) dropTiles.Add(neighborCoord);
         }
 
@@ -128,9 +128,9 @@ public class InputController : MonoBehaviour
             onConfirm: cell =>
             {
                 unit.DropUnit(cell);
-                ActionMenuController.Instance.CompleteDrop();
+                ActionMenu.Instance.CompleteDrop();
             },
-            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+            onCancel: () => ActionMenu.Instance.ReopenMenu()));
     }
 
     // Undo the unit's move and let the player pick a new destination
@@ -159,18 +159,18 @@ public class InputController : MonoBehaviour
         Vector2 screenPosition = Mouse.current.position.ReadValue();
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
 
-        if (GameController.Instance.gamePhase == GamePhase.Enemy) return;
+        if (GamePhaseManager.Instance.gamePhase == GamePhase.Enemy) return;
         if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
-        if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen) return;
-        if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen) return;
+        if (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen) return;
+        if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen) return;
         
 
         Vector3Int cell = MapManager.Instance.WorldToGrid(worldPosition);
 
-        if(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        if(ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
         {
             //Unit clicked after moving treat as wait
-            if(MapManager.Instance.GetObjectsAt(cell).Contains(ActionMenuController.Instance.PendingUnit)) ActionMenuController.Instance.OnWaitClicked();
+            if(MapManager.Instance.GetObjectsAt(cell).Contains(ActionMenu.Instance.PendingUnit)) ActionMenu.Instance.OnWaitClicked();
             return;
         }
 
@@ -182,21 +182,21 @@ public class InputController : MonoBehaviour
     // 
     private void OnRightClick(InputAction.CallbackContext context)
     {
-        if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
+        if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen)
         {
-            TradeMenuController.Instance.Close();
+            TradeMenu.Instance.Close();
         }
-        else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
+        else if (InventoryMenu.Instance != null && InventoryMenu.Instance.isSubMenuOpen)
         {
-            InventoryMenuController.Instance.CloseSubMenu();
+            InventoryMenu.Instance.CloseSubMenu();
         }
-        else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+        else if (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
         {
-            InventoryMenuController.Instance.Close();
+            InventoryMenu.Instance.Close();
         }
-        else if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        else if (ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
         {
-            ActionMenuController.Instance.CancelMenu();
+            ActionMenu.Instance.CancelMenu();
         }
         else
         {
@@ -218,10 +218,10 @@ public class InputController : MonoBehaviour
         {
             // The menus handle their own input; the hover panel shows whose menu it is
             MapOverlay.Instance.HideReticle();
-            CombatForecastController.Instance?.Hide();
-            PlayerUnit menuUnit = ActionMenuController.Instance != null ? ActionMenuController.Instance.PendingUnit : null;
-            if (menuUnit != null) HoverInfoController.Instance?.ShowUnit(menuUnit);
-            else HoverInfoController.Instance?.Hide();
+            CombatForecastPanel.Instance?.Hide();
+            PlayerUnit menuUnit = ActionMenu.Instance != null ? ActionMenu.Instance.PendingUnit : null;
+            if (menuUnit != null) HoverInfoPanel.Instance?.ShowUnit(menuUnit);
+            else HoverInfoPanel.Instance?.Hide();
         }
         else
         {
@@ -237,7 +237,7 @@ public class InputController : MonoBehaviour
 
         foreach(EnemyUnit enemy in toggledEnemies)
         {
-            var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(enemy);
+            var (reachable, attackable) = Pathfinder.Instance.GetUnitRange(enemy);
             MapOverlay.Instance.AddDangerZone(reachable, attackable);
         }
     }
@@ -262,8 +262,8 @@ public class InputController : MonoBehaviour
     }
     private bool IsMenuOpen()
     {
-        return (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
-        || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-        || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen);
+        return (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
+        || (ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
+        || (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen);
     }
 }

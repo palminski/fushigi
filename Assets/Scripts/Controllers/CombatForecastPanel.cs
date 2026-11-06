@@ -1,9 +1,9 @@
 using TMPro;
 using UnityEngine;
 
-public class CombatForecastController : MonoBehaviour
+public class CombatForecastPanel : MonoBehaviour
 {
-    public static CombatForecastController Instance { get; private set; }
+    public static CombatForecastPanel Instance { get; private set; }
 
     [SerializeField] private GameObject panel;
 

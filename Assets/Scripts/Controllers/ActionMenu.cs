@@ -3,9 +3,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionMenuController : MonoBehaviour
+public class ActionMenu : MonoBehaviour
 {
-    public static ActionMenuController Instance { get; private set; }
+    public static ActionMenu Instance { get; private set; }
 
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private Button attackButton;
@@ -105,7 +105,7 @@ public class ActionMenuController : MonoBehaviour
         menuPanel.SetActive(false);
         if (adjacentPlayers.Count == 1)
         {
-            TradeMenuController.Instance.Show(pendingUnit, adjacentPlayers[0]);
+            TradeMenu.Instance.Show(pendingUnit, adjacentPlayers[0]);
         }
         else
         {
@@ -116,7 +116,7 @@ public class ActionMenuController : MonoBehaviour
     public void OnInventoryClicked()
     {
         menuPanel.SetActive(false);
-        InventoryMenuController.Instance.Show(pendingUnit);
+        InventoryMenu.Instance.Show(pendingUnit);
     }
 
     public void OnAttackClicked()
@@ -178,7 +178,7 @@ public class ActionMenuController : MonoBehaviour
     {
         if (pendingUnit.heldUnit == null) return;
         menuPanel.SetActive(false);
-        TradeMenuController.Instance.Show(pendingUnit, pendingUnit.heldUnit);
+        TradeMenu.Instance.Show(pendingUnit, pendingUnit.heldUnit);
     }
 
     public void OnWaitClicked()
@@ -229,7 +229,7 @@ public class ActionMenuController : MonoBehaviour
         foreach (ItemInstance item in unit.inventory.items)
         {
             if (item is not WeaponInstance weapon) continue;
-            List<Node> attackableTiles = PathfinderController.Instance.GetAttackableTiles(
+            List<Node> attackableTiles = Pathfinder.Instance.GetAttackableTiles(
                 unit.transform.position, weapon.minRange, weapon.maxRange
             );
             foreach (Node node in attackableTiles)
@@ -289,7 +289,7 @@ public class ActionMenuController : MonoBehaviour
         foreach (Vector3Int neighborCoord in neighborCoords)
         {
             bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is Unit);
-            bool walkable = PathfinderController.Instance.GetNode(neighborCoord)?.walkable ?? false;
+            bool walkable = Pathfinder.Instance.GetNode(neighborCoord)?.walkable ?? false;
             if(!occupied && walkable) return true;
         }
         return false;

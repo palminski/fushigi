@@ -67,14 +67,14 @@ public class TargetSelectState : InputState
         if (hoveredEnemy == null)
         {
             forecast.Clear();
-            HoverInfoController.Instance?.ShowUnit(Unit);
+            HoverInfoPanel.Instance?.ShowUnit(Unit);
             return;
         }
 
         int distance = AttackPlanner.Distance(Unit.GridPosition, hoveredCell);
         var options = AttackPlanner.WeaponsInRange(Unit, distance).Select(w => (w, (Node)null)).ToList();
         forecast.Show(Unit, hoveredEnemy, options, Kind == TargetKind.Capture);
-        HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
+        HoverInfoPanel.Instance?.ShowUnit(hoveredEnemy);
     }
 
     public override void OnScroll(int direction)

@@ -31,7 +31,7 @@ public class AttackForecast
 
         index = ((index % options.Count) + options.Count) % options.Count; // wrap around in both directions
         (weapon, attackFrom) = options[index];
-        CombatForecastController.Instance?.Show(attacker, enemy, weapon, attackFrom?.gridPosition, isCapture);
+        CombatForecastPanel.Instance?.Show(attacker, enemy, weapon, attackFrom?.gridPosition, isCapture);
     }
 
     // Nothing to forecast: hide the panel and forget the choice
@@ -41,13 +41,13 @@ public class AttackForecast
         index = 0;
         weapon = null;
         attackFrom = null;
-        CombatForecastController.Instance?.Hide();
+        CombatForecastPanel.Instance?.Hide();
     }
 
     // Hide the panel but remember the choice, so a click handled after leaving the state can still use it
     public void HidePanel()
     {
-        CombatForecastController.Instance?.Hide();
+        CombatForecastPanel.Instance?.Hide();
     }
 
     // What the forecast is showing for `enemy`, or null if it isn't showing that enemy

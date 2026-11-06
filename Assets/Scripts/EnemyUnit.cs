@@ -21,7 +21,7 @@ public class EnemyUnit : Unit
 
         if (targetNode != null)
         {
-            List<Node> path = PathfinderController.Instance.FindPath(mover.transform.position, targetNode.gridPosition, unitAttributes.movementClass);
+            List<Node> path = Pathfinder.Instance.FindPath(mover.transform.position, targetNode.gridPosition, unitAttributes.movementClass);
             mover.StartMoving(path);
         }
     }
@@ -34,7 +34,7 @@ public class EnemyUnit : Unit
 
     private Node FindTargetTile()
     {
-        List<Node> reachableNodes = PathfinderController.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement, unitAttributes.movementClass);
+        List<Node> reachableNodes = Pathfinder.Instance.GetReachableNodes(mover.transform.position, unitAttributes.movement, unitAttributes.movementClass);
         var playerUnits = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
 
         int bestScore = int.MinValue;
@@ -106,7 +106,7 @@ public class EnemyUnit : Unit
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.Resolve(this, target, weapon);
-        CombatScreenController.Instance.Show(result);
+        CombatScreen.Instance.Show(result);
         yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
         if (result.totalDamageToDefender > 0 && target != null)

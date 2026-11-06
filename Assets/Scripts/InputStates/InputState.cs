@@ -20,16 +20,16 @@ public abstract class InputState
         Unit unit = MapManager.Instance.GetObjectsAt(cell).OfType<Unit>().FirstOrDefault();
         if (unit != null)
         {
-            HoverInfoController.Instance?.ShowUnit(unit);
+            HoverInfoPanel.Instance?.ShowUnit(unit);
             return;
         }
 
-        Node node = PathfinderController.Instance.GetNode(cell);
+        Node node = Pathfinder.Instance.GetNode(cell);
         if (node?.terrainType != null)
         {
-            HoverInfoController.Instance?.ShowTerrain(node.terrainType);
+            HoverInfoPanel.Instance?.ShowTerrain(node.terrainType);
             return;
         }
-        HoverInfoController.Instance?.Hide();
+        HoverInfoPanel.Instance?.Hide();
     }
 }

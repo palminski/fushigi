@@ -31,7 +31,7 @@ public class UnitSelectedState : InputState
             return;
         }
 
-        var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(Mover.playerUnit);
+        var (reachable, attackable) = Pathfinder.Instance.GetUnitRange(Mover.playerUnit);
         MapOverlay.Instance.ShowRange(reachable, attackable, OverlayColor.Green, OverlayColor.Red);
         MapOverlay.Instance.ShowReticle(hoveredCell);
 
@@ -43,7 +43,7 @@ public class UnitSelectedState : InputState
             forecast.Show(Mover.playerUnit, hoveredEnemy, options);
 
             bool canAttack = options.Count > 0;
-            HoverInfoController.Instance?.ShowUnit(canAttack ? hoveredEnemy : Mover.playerUnit);
+            HoverInfoPanel.Instance?.ShowUnit(canAttack ? hoveredEnemy : Mover.playerUnit);
 
             Node attackFrom = forecast.AttackFromFor(hoveredEnemy);
             if (attackFrom != null) ShowPathTo(attackFrom.gridPosition);
@@ -52,7 +52,7 @@ public class UnitSelectedState : InputState
         }
 
         forecast.Clear();
-        HoverInfoController.Instance?.ShowUnit(Mover.playerUnit);
+        HoverInfoPanel.Instance?.ShowUnit(Mover.playerUnit);
 
         bool onMap = inputController.tilemap.GetTile(hoveredCell) != null;
         if (onMap && ShowPathTo(hoveredCell)) return;
@@ -66,8 +66,8 @@ public class UnitSelectedState : InputState
     {
         Vector3Int unitCell = Mover.playerUnit.GridPosition;
         MovementClass movementClass = Mover.playerUnit.unitAttributes.movementClass;
-        List<Node> path = PathfinderController.Instance.FindPath(unitCell, cell, movementClass);
-        bool canReach = path != null && PathfinderController.Instance.GetPathCost(path, movementClass) <= Mover.playerUnit.unitAttributes.movement;
+        List<Node> path = Pathfinder.Instance.FindPath(unitCell, cell, movementClass);
+        bool canReach = path != null && Pathfinder.Instance.GetPathCost(path, movementClass) <= Mover.playerUnit.unitAttributes.movement;
 
         if (canReach) MapOverlay.Instance.ShowPath(unitCell, path);
         else MapOverlay.Instance.ClearPath();
@@ -97,14 +97,14 @@ public class UnitSelectedState : InputState
             if (weapon == null || bestTile == null)
             {
                 MovementClass mc2 = Mover.playerUnit.unitAttributes.movementClass;
-                List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGridPos, Mover.playerUnit.unitAttributes.movement, mc2);
+                List<Node> reachable = Pathfinder.Instance.GetReachableNodes(playerGridPos, Mover.playerUnit.unitAttributes.movement, mc2);
                 (weapon, bestTile) = AttackPlanner.BestAttack(Mover.playerUnit, clickedEnemy, reachable);
             }
             if (weapon != null && bestTile != null)
             {
                 MovementClass mc = Mover.playerUnit.unitAttributes.movementClass;
                 Mover.playerUnit.inventory.Equip(weapon);
-                List<Node> path = PathfinderController.Instance.FindPath(playerGridPos, bestTile.gridPosition, mc);
+                List<Node> path = Pathfinder.Instance.FindPath(playerGridPos, bestTile.gridPosition, mc);
                 Mover.QueueAttack(clickedEnemy, weapon);
                 inputController.ReturnToIdle();
                 Mover.StartMoving(path, Mover.playerUnit.unitAttributes.movement);
@@ -117,8 +117,8 @@ public class UnitSelectedState : InputState
         {
 
             MovementClass movementClass = Mover.playerUnit.unitAttributes.movementClass;
-            List<Node> path = PathfinderController.Instance.FindPath(playerGridPos, cell, movementClass);
-            if (path != null && path.Count > 0 && PathfinderController.Instance.GetPathCost(path, movementClass) <= Mover.playerUnit.unitAttributes.movement)
+            List<Node> path = Pathfinder.Instance.FindPath(playerGridPos, cell, movementClass);
+            if (path != null && path.Count > 0 && Pathfinder.Instance.GetPathCost(path, movementClass) <= Mover.playerUnit.unitAttributes.movement)
             {
                 inputController.ReturnToIdle();
                 Mover.StartMoving(path, Mover.playerUnit.unitAttributes.movement);

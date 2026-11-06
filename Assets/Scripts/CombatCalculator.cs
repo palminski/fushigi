@@ -79,7 +79,7 @@ public static class CombatCalculator
     }
 
     private static int GetTerrainAvoid(Vector3Int gridPos)
-        => PathfinderController.Instance.GetNode(gridPos)?.terrainType?.avoidBonus ?? 0;
+        => Pathfinder.Instance.GetNode(gridPos)?.terrainType?.avoidBonus ?? 0;
 
     public static CombatPreview Preview(Unit attacker, Unit defender, WeaponInstance weapon, Vector3Int? fromPosition = null, bool isCaptureAttempt = false)
     {

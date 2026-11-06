@@ -3,11 +3,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class PathfinderController : MonoBehaviour
+public class Pathfinder : MonoBehaviour
 {
     // Pathfinder controller is a singleton object that handles the nodes representing tiles in the game. While its primary function is finding paths from one position to another, it
     // also handles functions related to getting information about the grid and nodes, such as returning a node from a position, or calculating the range that a unit can move.
-    public static PathfinderController Instance { get; private set; }
+    public static Pathfinder Instance { get; private set; }
 
     [System.Serializable]
     public struct TerrainLayer
@@ -295,8 +295,8 @@ public class PathfinderController : MonoBehaviour
                 var objectsAtTile = MapManager.Instance.GetObjectsAt(position);
 
                 bool walkable = walkableTilemap.HasTile(position)
-                    && !(GameController.Instance.gamePhase == GamePhase.Player && objectsAtTile.Any(obj => obj is EnemyUnit))
-                    && !(GameController.Instance.gamePhase == GamePhase.Enemy && objectsAtTile.Any(obj => obj is PlayerUnit));
+                    && !(GamePhaseManager.Instance.gamePhase == GamePhase.Player && objectsAtTile.Any(obj => obj is EnemyUnit))
+                    && !(GamePhaseManager.Instance.gamePhase == GamePhase.Enemy && objectsAtTile.Any(obj => obj is PlayerUnit));
 
                 TerrainType terrainType = null;
                 foreach (var layer in terrainLayers)

@@ -14,7 +14,7 @@ public class PlayerUnit : Unit
         float lumunence = 0.299f * baseColor.r + 0.587f * baseColor.g + 0.114f * baseColor.b;
         Color inactiveColor = new Color(lumunence, lumunence, lumunence, 0.5f);
         spriteRenderer.color = inactiveColor;
-        GameController.Instance.CheckAndChangePhase(); //Temporary for now
+        GamePhaseManager.Instance.CheckAndChangePhase(); //Temporary for now
     }
 
     public void SetActive()
@@ -43,7 +43,7 @@ public class PlayerUnit : Unit
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.Resolve(this, target, weapon);
-        CombatScreenController.Instance.Show(result);
+        CombatScreen.Instance.Show(result);
         yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
         if (result.totalDamageToDefender > 0 && target != null)

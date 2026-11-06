@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InventoryMenuController : MonoBehaviour
+public class InventoryMenu : MonoBehaviour
 {
-    public static InventoryMenuController Instance { get; private set; }
+    public static InventoryMenu Instance { get; private set; }
 
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private Transform itemListParent;
@@ -106,7 +106,7 @@ public class InventoryMenuController : MonoBehaviour
         subMenuPanel.SetActive(false);
         pendingUnit = null;
         selectedItem = null;
-        ActionMenuController.Instance.ReopenMenu();
+        ActionMenu.Instance.ReopenMenu();
     }
 
     public void CloseAndEndTurn()
@@ -116,7 +116,7 @@ public class InventoryMenuController : MonoBehaviour
         subMenuPanel.SetActive(false);
         pendingUnit = null;
         selectedItem = null;
-        ActionMenuController.Instance.HideMenu();
+        ActionMenu.Instance.HideMenu();
         unit.SetInactive();
     }
 }

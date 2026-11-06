@@ -7,6 +7,6 @@ public class TradeInventoryPanel : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
-        TradeMenuController.Instance.OnDropOnPanel(isLeftSide);
+        TradeMenu.Instance.OnDropOnPanel(isLeftSide);
     }
 }

@@ -5,9 +5,9 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections;
 
-public class TradeMenuController : MonoBehaviour
+public class TradeMenu : MonoBehaviour
 {
-    public static TradeMenuController Instance { get; private set; }
+    public static TradeMenu Instance { get; private set; }
 
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private Transform leftItemParent;
@@ -252,9 +252,9 @@ public class TradeMenuController : MonoBehaviour
         partnerSnapshot = null;
 
         if (itemsChanged)
-            ActionMenuController.Instance.ReopenMenuLocked();
+            ActionMenu.Instance.ReopenMenuLocked();
         else
-            ActionMenuController.Instance.ReopenMenu();
+            ActionMenu.Instance.ReopenMenu();
     }
 
     private void AutoEquip(Unit unit)

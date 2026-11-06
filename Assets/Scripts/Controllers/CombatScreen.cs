@@ -4,9 +4,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CombatScreenController : MonoBehaviour
+public class CombatScreen : MonoBehaviour
 {
-    public static CombatScreenController Instance { get; private set; }
+    public static CombatScreen Instance { get; private set; }
     [SerializeField] private GameObject panel;
     [SerializeField] private TMP_Text combatLogText;
     private GameInput inputActions;

@@ -22,7 +22,7 @@ public class TradeItemRow : MonoBehaviour, IPointerClickHandler, IBeginDragHandl
         this.item = item;
         this.isLeftSide = isLeftSide;
         canvasGroup = GetComponent<CanvasGroup>();
-        itemText.text = item != null ? TradeMenuController.GetItemLabel(item) : "- - -";
+        itemText.text = item != null ? TradeMenu.GetItemLabel(item) : "- - -";
         if (background != null) background.color = item != null ? normalColor : emptyColor;
     }
 
@@ -34,25 +34,25 @@ public class TradeItemRow : MonoBehaviour, IPointerClickHandler, IBeginDragHandl
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        TradeMenuController.Instance.OnItemClicked(this);
+        TradeMenu.Instance.OnItemClicked(this);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (item == null) return;
         if (canvasGroup != null) canvasGroup.blocksRaycasts = false;
-        TradeMenuController.Instance.BeginDrag(this);
+        TradeMenu.Instance.BeginDrag(this);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (item == null) return;
-        TradeMenuController.Instance.UpdateDrag(eventData.position);
+        TradeMenu.Instance.UpdateDrag(eventData.position);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        TradeMenuController.Instance.EndDrag(eventData);
+        TradeMenu.Instance.EndDrag(eventData);
     }
 
     public void OnDrop(PointerEventData eventData) { }

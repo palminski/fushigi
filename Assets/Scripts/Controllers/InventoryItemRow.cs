@@ -16,6 +16,6 @@ public class InventoryItemRow : MonoBehaviour
             itemNameText.text = item.data.itemName;
 
         GetComponent<Button>().onClick.RemoveAllListeners();
-        GetComponent<Button>().onClick.AddListener(() => InventoryMenuController.Instance.SelectItem(item));
+        GetComponent<Button>().onClick.AddListener(() => InventoryMenu.Instance.SelectItem(item));
     }
 }

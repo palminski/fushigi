@@ -7,9 +7,9 @@ public enum GamePhase
     Player,
     Enemy,
 }
-public class GameController : MonoBehaviour
+public class GamePhaseManager : MonoBehaviour
 {
-    public static GameController Instance { get; private set; }
+    public static GamePhaseManager Instance { get; private set; }
 
     public GamePhase gamePhase = GamePhase.Player;
 

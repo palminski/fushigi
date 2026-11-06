@@ -129,7 +129,7 @@ public abstract class Unit : MapObject
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.ResolveCapture(this, target, weapon);
-        CombatScreenController.Instance.Show(result);
+        CombatScreen.Instance.Show(result);
         yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
 

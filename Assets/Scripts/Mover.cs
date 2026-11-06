@@ -59,7 +59,7 @@ public class Mover : MonoBehaviour
                 transform.position = targetPosition;
             }
             isMoving = false;
-            PathfinderController.Instance.GenerateGrid();
+            Pathfinder.Instance.GenerateGrid();
             if (queuedAttackTarget != null)
             {
                 EnemyUnit target = queuedAttackTarget;
@@ -71,7 +71,7 @@ public class Mover : MonoBehaviour
             } 
             else if (playerUnit != null)
             {
-                ActionMenuController.Instance.ShowMenu(playerUnit);
+                ActionMenu.Instance.ShowMenu(playerUnit);
             }
         }
     }
@@ -79,13 +79,13 @@ public class Mover : MonoBehaviour
     public void DeactivatePlayer()
     {
         startWorldPosition = transform.position;
-        if (playerUnit) ActionMenuController.Instance.ShowMenu(playerUnit);
+        if (playerUnit) ActionMenu.Instance.ShowMenu(playerUnit);
     }
 
     public void CancelMove()
     {
         transform.position = startWorldPosition;
-        PathfinderController.Instance.GenerateGrid();
+        Pathfinder.Instance.GenerateGrid();
     }
 
     public void QueueAttack(EnemyUnit target, WeaponInstance weapon)
