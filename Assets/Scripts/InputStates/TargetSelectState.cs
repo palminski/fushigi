@@ -60,13 +60,13 @@ public class TargetSelectState : InputState
     {
         if (!IsTarget(cell)) return;
         // Leave the state first so onConfirm can safely open menus or start a new state
-        InputController.Instance.ChangeState(null);
+        InputController.Instance.ReturnToIdle();
         onConfirm(cell);
     }
 
     public override void OnRightClick()
     {
-        InputController.Instance.ChangeState(null);
+        InputController.Instance.ReturnToIdle();
         onCancel();
     }
 

@@ -74,7 +74,7 @@ public class UnitSelectedState : InputState
         if (playerGridPos == cell)
         {
             Mover.DeactivatePlayer();
-            inputController.ChangeState(null);
+            inputController.ReturnToIdle();
             return;
         }
 
@@ -95,7 +95,7 @@ public class UnitSelectedState : InputState
                 Mover.playerUnit.inventory.Equip(weapon);
                 List<Node> path = PathfinderController.Instance.FindPath(playerGridPos, bestTile.gridPosition, mc);
                 Mover.QueueAttack(clickedEnemy, weapon);
-                inputController.ChangeState(null);
+                inputController.ReturnToIdle();
                 Mover.StartMoving(path, Mover.playerUnit.unitAttributes.movement);
             }
             return;
@@ -109,7 +109,7 @@ public class UnitSelectedState : InputState
             List<Node> path = PathfinderController.Instance.FindPath(playerGridPos, cell, movementClass);
             if (path != null && path.Count > 0 && PathfinderController.Instance.GetPathCost(path, movementClass) <= Mover.playerUnit.unitAttributes.movement)
             {
-                inputController.ChangeState(null);
+                inputController.ReturnToIdle();
                 Mover.StartMoving(path, Mover.playerUnit.unitAttributes.movement);
             }
         }
@@ -117,7 +117,7 @@ public class UnitSelectedState : InputState
 
     public override void OnRightClick()
     {
-        inputController.ChangeState(null);
+        inputController.ReturnToIdle();
     }
 
     public override string ToString()

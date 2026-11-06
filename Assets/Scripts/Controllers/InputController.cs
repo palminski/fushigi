@@ -31,6 +31,11 @@ public class InputController : MonoBehaviour
         inputActions = new GameInput();
     }
 
+    void Start()
+    {
+        ReturnToIdle();
+    }
+
     void OnEnable()
     {
         inputActions.Gameplay.Enable();
@@ -162,44 +167,16 @@ public class InputController : MonoBehaviour
         if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen) return;
         
 
-        //Player is picking a target (attack, capture, trade, rescue, take, drop) - the state handles it
-        if (currentState != null)
+        Vector3Int cell = MapManager.Instance.WorldToGrid(worldPosition);
+
+        if(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
         {
-            currentState.OnClick(MapManager.Instance.WorldToGrid(worldPosition));
+            //Unit clicked after moving treat as wait
+            if(MapManager.Instance.GetObjectsAt(cell).Contains(ActionMenuController.Instance.PendingUnit)) ActionMenuController.Instance.OnWaitClicked();
             return;
         }
 
-        List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-        if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-        {
-            //If Unit clicked after moving act as if wait was clicked
-            if (objectsAtTile.Contains(ActionMenuController.Instance.PendingUnit)) ActionMenuController.Instance.OnWaitClicked();
-            return;
-        }
-        
-            MapManager.Instance.RefreshMap();
-
-            Unit hoveredUnit = objectsAtTile.OfType<Unit>().FirstOrDefault();
-            if (hoveredUnit == null) return;
-            if(hoveredUnit is PlayerUnit playerUnit)
-
-            // PlayerUnit playerUnit = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
-
-            if (playerUnit.canAct)
-            {
-                Mover mover = playerUnit.mover;
-                if (mover != null && !mover.isMoving)
-                {
-                    ChangeState(new UnitSelectedState(mover));
-                }
-                return;
-            }
-            if(hoveredUnit is EnemyUnit clickedEnemy)
-            {
-                if(!toggledEnemies.Remove(clickedEnemy)) toggledEnemies.Add(clickedEnemy);
-                clickedEnemy.UpdateIndicators();
-            }
-        
+        currentState.OnClick(cell);
     }
 
     // 
@@ -210,10 +187,6 @@ public class InputController : MonoBehaviour
         if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
         {
             TradeMenuController.Instance.Close();
-        }
-        else if (currentState != null)
-        {
-            currentState.OnRightClick();
         }
         else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
         {
@@ -227,6 +200,10 @@ public class InputController : MonoBehaviour
         {
             ActionMenuController.Instance.CancelMenu();
         }
+        else
+        {
+            currentState.OnRightClick();
+        }
     }
 
     // Update is called once per frame
@@ -237,7 +214,7 @@ public class InputController : MonoBehaviour
 
         Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
 
-        RefreshRangeOverlay(gridPosition);
+        RefreshDangerZones(gridPosition);
 
         if (GameController.Instance.gamePhase == GamePhase.Player)
         {
@@ -250,23 +227,17 @@ public class InputController : MonoBehaviour
             CombatForecastController.Instance?.Hide();
         }
 
-        if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
-            || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen))
+        if(IsMenuOpen())
         {
             MapOverlay.Instance.HideReticle();
         }
-        else if (currentState != null)
+        else
         {
             currentState.Tick(gridPosition);
         }
-        else
-        {
-            MapOverlay.Instance.ShowReticle(gridPosition);
-        }
     }
 
-    private void RefreshRangeOverlay(Vector3Int hoveredCoord)
+    private void RefreshDangerZones(Vector3Int hoveredCoord)
     {
         MapOverlay.Instance.ClearDangerZones();
 
@@ -277,25 +248,6 @@ public class InputController : MonoBehaviour
             var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(enemy);
             MapOverlay.Instance.AddDangerZone(reachable, attackable);
         }
-
-        if (!IsBaseIdleState()) return;
-        MapOverlay.Instance.ClearSelection();
-
-        Unit hoveredUnit = MapManager.Instance.GetObjectsAt(hoveredCoord).OfType<Unit>().FirstOrDefault();
-        if (hoveredUnit == null) return;
-        bool hoveredUnitIsPlayer = hoveredUnit is PlayerUnit;
-        var (hoveredReachable, hoveredAttackable) = PathfinderController.Instance.GetUnitRange(hoveredUnit);
-        MapOverlay.Instance.ShowRange(hoveredReachable, hoveredAttackable, hoveredUnitIsPlayer ? OverlayColor.GreenLight : OverlayColor.RedLight, OverlayColor.Red);
-
-    }
-
-    private bool IsBaseIdleState()
-    {
-        return 
-        !(InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
-        && !(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-        && !(TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
-        && currentState == null;
     }
 
     
@@ -502,5 +454,22 @@ public class InputController : MonoBehaviour
         if (weapon != null)
         yield return StartCoroutine(capturer.CaptureCoroutine(target, weapon));
         if (capturer != null) capturer.SetInactive();
+    }
+
+
+    public void ReturnToIdle()
+    {
+        ChangeState(new IdleState());
+    }
+    public void ToggleDangerZone(EnemyUnit enemy)
+    {
+        if (!toggledEnemies.Remove(enemy)) toggledEnemies.Add(enemy);
+        enemy.UpdateIndicators();
+    }
+    private bool IsMenuOpen()
+    {
+        return (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+        || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
+        || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen);
     }
 }
