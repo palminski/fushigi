@@ -1,0 +1,109 @@
+using UnityEngine;
+using System.Collections.Generic;
+public class UnitStatIndicatorManager : MonoBehaviour
+{
+    public static UnitStatIndicatorManager Instance {get; private set; }
+
+    [System.Serializable]
+    public class IndicatorParams
+    {
+        public Sprite sprite;
+        public Vector2 offset;
+        public Vector2 size = Vector2.one;
+        public Color color = Color.white;
+        public int sortingOrder;
+    }
+
+    [SerializeField] private IndicatorParams healthBarOutline;
+    [SerializeField] private IndicatorParams healthBar;
+    [SerializeField] private IndicatorParams heldUnitMarker;
+    [SerializeField] private IndicatorParams unitHighlight;
+    [SerializeField] private Color heldEnemyColor = Color.red;
+
+    private class UnitIndicators
+    {
+        public SpriteRenderer healthBar;
+        public SpriteRenderer healthBarOutline;
+        public SpriteRenderer heldUnitMarker;
+        public SpriteRenderer unitHighlight;
+    }
+    private readonly Dictionary<Unit, UnitIndicators> indicators = new Dictionary<Unit, UnitIndicators>();  
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    void Start()
+    {
+        foreach(Unit unit in FindObjectsByType<Unit>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            AddIndicators(unit);
+        }
+    }
+
+    private void AddIndicators(Unit unit)
+    {
+
+        UnitIndicators unitIndicators = new UnitIndicators
+        {
+            healthBar = CreateAndAssignRenderer(unit, "Health Bar", healthBar),
+            healthBarOutline = CreateAndAssignRenderer(unit, "Health Bar Outline", healthBarOutline),
+            heldUnitMarker = CreateAndAssignRenderer(unit, "Held Unit Marker", heldUnitMarker),
+            unitHighlight = CreateAndAssignRenderer(unit, "Unit Highlight", unitHighlight),
+        };
+
+        unitIndicators.unitHighlight.enabled = false;
+        indicators[unit] = unitIndicators;
+
+        DrawHealth(unit);
+        DrawHeldUnit(unit);
+
+        unit.HealthChanged += () => DrawHealth(unit);
+        unit.HeldUnitChanged += () => DrawHeldUnit(unit);
+    }
+
+    private void DrawHealth(Unit unit)
+    {
+        UnitAttributes attributes = unit.unitAttributes;
+        float healthPercent = attributes.health > 0 ? (float)attributes.currentHealth / attributes.health : 0f;
+        healthPercent = Mathf.Clamp01(healthPercent);
+
+        Transform bar = indicators[unit].healthBar.transform;
+        bar.localScale = new Vector3(healthBar.size.x * healthPercent, healthBar.size.y, 1f);
+    }
+
+    private void DrawHeldUnit(Unit unit)
+    {
+        SpriteRenderer marker = indicators[unit].heldUnitMarker;
+        marker.enabled = unit.heldUnit != null;
+        marker.color = unit.heldUnit is EnemyUnit ? heldEnemyColor : heldUnitMarker.color;
+    }
+
+    public void SetHighlighted(EnemyUnit enemy, bool isOn)
+    {
+        if (indicators.TryGetValue(enemy, out UnitIndicators unitIndicators))
+        {
+            unitIndicators.unitHighlight.enabled = isOn;
+        }
+    }
+
+    private SpriteRenderer CreateAndAssignRenderer(Unit unit, string name, IndicatorParams parameters)
+    {
+        GameObject indicatorObject = new GameObject(name);
+        indicatorObject.transform.SetParent(unit.transform,false);
+        indicatorObject.transform.localPosition = parameters.offset;
+        indicatorObject.transform.localScale = new Vector3(parameters.size.x, parameters.size.y, 1f);
+
+        SpriteRenderer spriteRenderer = indicatorObject.AddComponent<SpriteRenderer>();
+        spriteRenderer.sprite = parameters.sprite;
+        spriteRenderer.color = parameters.color;
+        spriteRenderer.sortingOrder = parameters.sortingOrder;
+        return spriteRenderer;
+    }
+}

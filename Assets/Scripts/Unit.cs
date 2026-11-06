@@ -14,9 +14,8 @@ public abstract class Unit : MapObject
     public bool hasDroppedUnit = false;
     public Unit heldUnit {get; private set;}
 
-    [SerializeField] private Transform healthBar;
-    [SerializeField] private SpriteRenderer holdingUnitIndicator;
-    [SerializeField] private SpriteRenderer toggledOnEnemyIndicator;
+    public event System.Action HealthChanged;
+    public event System.Action HeldUnitChanged;
 
     protected virtual void Awake()
     {
@@ -25,13 +24,13 @@ public abstract class Unit : MapObject
         baseColor = spriteRenderer.color;
         mover = GetComponent<Mover>();
         inventory.Initialize();
-        UpdateIndicators();
     }
 
     public void TakeDamage(int damage)
     {
         unitAttributes.currentHealth -= damage;
-        UpdateIndicators();
+        HealthChanged?.Invoke();
+
         if (unitAttributes.currentHealth <= 0)
         {
             Destroy(gameObject);
@@ -41,40 +40,7 @@ public abstract class Unit : MapObject
     public void Heal(int healAmount)
     {
         unitAttributes.currentHealth = Mathf.Min(unitAttributes.currentHealth + healAmount,unitAttributes.health);
-        UpdateIndicators();
-    }
-
-    public void UpdateIndicators()
-    {
-        if (healthBar != null && unitAttributes.health != 0)
-        {
-            float percentage = (float)unitAttributes.currentHealth / unitAttributes.health;
-            healthBar.localScale = new(percentage, healthBar.localScale.y, healthBar.localScale.z);
-        }
-        if (holdingUnitIndicator != null)
-        {
-            if(heldUnit != null)
-            {
-                holdingUnitIndicator.gameObject.SetActive(true);
-                holdingUnitIndicator.color = (heldUnit is PlayerUnit) ? Color.blue : Color.red;
-            }
-            else
-            {
-                holdingUnitIndicator.gameObject.SetActive(false);
-            }
-        }
-        if (toggledOnEnemyIndicator != null)
-        {
-            if(this is EnemyUnit thisEnemy && InputController.Instance.toggledEnemies.Contains(thisEnemy))
-            {
-                toggledOnEnemyIndicator.gameObject.SetActive(true);
-            }
-            else
-            {
-                toggledOnEnemyIndicator.gameObject.SetActive(false);
-            }
-            
-        }
+        HealthChanged?.Invoke();
     }
 
     public void PickUpUnit(Unit unit)
@@ -83,7 +49,7 @@ public abstract class Unit : MapObject
         hasPickedUpUnit = true;
         unit.gameObject.SetActive(false);
         MapManager.Instance.RefreshMap();
-        UpdateIndicators();
+        HeldUnitChanged?.Invoke();
 
     }
 
@@ -93,7 +59,7 @@ public abstract class Unit : MapObject
         heldUnit = ally.heldUnit;
         ally.BequeathUnit();
         MapManager.Instance.RefreshMap();
-        UpdateIndicators();
+        HeldUnitChanged?.Invoke();
 
     }
 
@@ -106,14 +72,14 @@ public abstract class Unit : MapObject
         dropped.gameObject.SetActive(true);
         dropped.transform.position = LevelMap.Instance.CellCenter(gridPosition);
         MapManager.Instance.RefreshMap();
-        UpdateIndicators();
+        HeldUnitChanged?.Invoke();
 
     }
 
     public void BequeathUnit()
     {
         heldUnit = null;
-        UpdateIndicators();
+        HeldUnitChanged?.Invoke();
 
     }
 
@@ -121,7 +87,7 @@ public abstract class Unit : MapObject
     {
         Destroy(heldUnit.gameObject);
         heldUnit = null;
-        UpdateIndicators();
+        HeldUnitChanged?.Invoke();
 
     }
 

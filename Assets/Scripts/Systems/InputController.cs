@@ -256,7 +256,7 @@ public class InputController : MonoBehaviour
     public void ToggleDangerZone(EnemyUnit enemy)
     {
         if (!toggledEnemies.Remove(enemy)) toggledEnemies.Add(enemy);
-        enemy.UpdateIndicators();
+        UnitStatIndicatorManager.Instance.SetHighlighted(enemy, toggledEnemies.Contains(enemy));
     }
     private bool IsMenuOpen()
     {

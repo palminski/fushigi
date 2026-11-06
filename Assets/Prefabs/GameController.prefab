@@ -4896,6 +4896,7 @@ GameObject:
   - component: {fileID: 2024426093938154581}
   - component: {fileID: 6051915339450185048}
   - component: {fileID: 1101575992203273615}
+  - component: {fileID: 2287920394734052049}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -4983,6 +4984,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b80388cf241532469873f37b33db4bde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenManager
+--- !u!114 &2287920394734052049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5598356921465743733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d2e338779b8e1e8abbe781f448e0a29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitStatIndicatorManager
+  healthBarOutline:
+    sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+    offset: {x: -0.0022, y: 0.4331}
+    size: {x: 0.928, y: 0.0972}
+    color: {r: 0, g: 0, b: 0, a: 1}
+    sortingOrder: 51
+  healthBar:
+    sprite: {fileID: 3737897332693287829, guid: 386d5aa54cf043869bcc19d06729d877, type: 3}
+    offset: {x: -0.459, y: 0.432}
+    size: {x: 1, y: 0.0905}
+    color: {r: 1, g: 0.36078432, b: 0, a: 1}
+    sortingOrder: 52
+  heldUnitMarker:
+    sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+    offset: {x: -0.39, y: -0.31}
+    size: {x: 0.23, y: 0.38}
+    color: {r: 0, g: 0.14509805, b: 1, a: 1}
+    sortingOrder: 51
+  unitHighlight:
+    sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+    color: {r: 1, g: 0, b: 0.011764706, a: 1}
+    sortingOrder: 42
+  heldEnemyColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &6244706377311829881
 GameObject:
   m_ObjectHideFlags: 0
