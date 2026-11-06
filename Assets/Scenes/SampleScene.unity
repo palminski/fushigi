@@ -18131,6 +18131,7 @@ GameObject:
   - component: {fileID: 965667714}
   - component: {fileID: 965667715}
   - component: {fileID: 965667716}
+  - component: {fileID: 965667717}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -18189,9 +18190,13 @@ MonoBehaviour:
   redOverlay: {fileID: 11400000, guid: 5d1f4f4369108024295b7cb92ee6e11f, type: 2}
   redOverlayLight: {fileID: 11400000, guid: 530fb72f92c335dd9bdb1ba5252001a8, type: 2}
   redOverlayDark: {fileID: 11400000, guid: 8bd320d59e40fc3caae64e6a8e54f713, type: 2}
-  currentMover: {fileID: 0}
   reticalTransform: {fileID: 1478333820}
   lineRenderer: {fileID: 1564213305}
+  currentStateName: None
+  lastForecastTarget: {fileID: 0}
+  forecastWeapon:
+    data: {fileID: 0}
+    currentDurability: 0
 --- !u!114 &965667714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18230,6 +18235,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b80388cf241532469873f37b33db4bde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenManager
+--- !u!114 &965667717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 965667709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 507bd2d78547f912c88407312c26bafe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapOverlay
+  selectionTilemap: {fileID: 60756818}
+  dangerZoneTilemap: {fileID: 1747014404}
+  green: {fileID: 11400000, guid: a4195d0fae0f6d24dadd40f561497839, type: 2}
+  greenLight: {fileID: 11400000, guid: 00403bbbf6fbad4359c289f32593c616, type: 2}
+  red: {fileID: 11400000, guid: 5d1f4f4369108024295b7cb92ee6e11f, type: 2}
+  redLight: {fileID: 11400000, guid: 530fb72f92c335dd9bdb1ba5252001a8, type: 2}
+  redDark: {fileID: 11400000, guid: 8bd320d59e40fc3caae64e6a8e54f713, type: 2}
+  pathLine: {fileID: 1564213305}
+  reticle: {fileID: 1478333820}
 --- !u!1 &966585043
 GameObject:
   m_ObjectHideFlags: 0

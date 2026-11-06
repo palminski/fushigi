@@ -84,7 +84,7 @@ public class ActionMenuController : MonoBehaviour
         PlayerUnit unit = pendingUnit;
         HideMenu();
         unit.mover.CancelMove();
-        InputController.Instance.currentMover = unit.mover;
+        InputController.Instance.ChangeState(new UnitSelectedState(unit.mover));
     }
 
     public void ReopenMenu()

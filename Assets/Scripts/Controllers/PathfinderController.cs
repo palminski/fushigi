@@ -177,6 +177,26 @@ public class PathfinderController : MonoBehaviour
         return attackable;
     }
 
+    public (HashSet<Node> reachable, HashSet<Node>attackable) GetUnitRange(Unit unit)
+    {
+        List<Node>reachable = GetReachableNodes(unit.GridPosition, unit.unitAttributes.movement, unit.unitAttributes.movementClass);
+        var reachableSet = new HashSet<Node>(reachable);
+        var attackableSet = new HashSet<Node>();
+
+        foreach (Node node in reachable)
+        {
+            foreach (ItemInstance item in unit.inventory.items)
+            {
+                if(item is not WeaponInstance weapon) continue;
+                foreach (Node attackNode in GetAttackableTiles(walkableTilemap.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
+                {
+                    attackableSet.Add(attackNode);
+                }
+            }
+        }
+        return (reachableSet, attackableSet);
+    }
+
     // Returns all nodes neighboring a given node
     public List<Node> GetNeighbors(Node node)
     {

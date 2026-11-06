@@ -8,50 +8,17 @@ using UnityEngine.Tilemaps;
 public class InputController : MonoBehaviour
 {
     public static InputController Instance { get; private set; }
-
     public Tilemap tilemap;
-    public Tilemap overlayTilemap;
-    public Tilemap enemyRangeOverlayTilemap;
-    public Tile greenOverlay;
-    public Tile greenOverlayLight;
-    public Tile redOverlay;
-    public Tile redOverlayLight;
-    public Tile redOverlayDark;
     public HashSet<EnemyUnit> toggledEnemies = new HashSet<EnemyUnit>();
-    public Mover currentMover;
-
-    public Transform reticalTransform;
-    public LineRenderer lineRenderer;
+    public Mover currentMover => (currentState as UnitSelectedState)?.Mover;
     private GameInput inputActions;
-
-    private bool isSelectingAttack = false;
-    private PlayerUnit pendingAttackUnit;
-    private List<EnemyUnit> attackableEnemies = new List<EnemyUnit>();
-
-    private bool isSelectingTradePartner = false;
-    private PlayerUnit pendingTradeUnit;
-    private List<PlayerUnit> tradablePartners = new List<PlayerUnit>();
-
-    private bool isSelectingDropTile = false;
-    private PlayerUnit pendingDropUnit;
-    private List<Vector3Int> validDropTiles = new List<Vector3Int>();
-
-    private bool isSelectingRescue = false;
-    private PlayerUnit pendingRescueUnit;
-    private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
-
-    private bool isSelectingTake = false;
-    private PlayerUnit pendingTakeUnit;
-    private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
-
-    private bool isSelectingCapture = false;
-    private PlayerUnit pendingCaptureUnit;
-    private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
+    private InputState currentState;
+    [SerializeField] private string currentStateName = "None"; // read-only, shown in the Inspector for debugging
 
     private int weaponCycleIndex = 0;
-    private EnemyUnit lastForecastTarget = null;
-    private WeaponInstance forecastWeapon = null;
-    private Node forecastBestTile = null;
+    public EnemyUnit lastForecastTarget = null;
+    public WeaponInstance forecastWeapon = null;
+    public Node forecastBestTile = null;
 
     void Awake()
     {
@@ -80,125 +47,104 @@ public class InputController : MonoBehaviour
         inputActions.Gameplay.Disable();
     }
 
+    // 
+    // STATE MACHINE
+    // 
+    public void ChangeState(InputState newState)
+    {
+        currentState?.Exit();
+        currentState = newState;
+        currentStateName = newState?.ToString() ?? "None";
+        currentState?.Enter();
+    }
+
+    // 
+    // TARGET SELECTION - started from the action menu
+    // 
     public void StartAttackTargetSelection(PlayerUnit unit, List<EnemyUnit> enemies)
     {
-        pendingAttackUnit = unit;
-        attackableEnemies = enemies;
-        isSelectingAttack = true;
-
-        overlayTilemap.ClearAllTiles();
-        foreach (EnemyUnit enemy in enemies)
-        {
-            overlayTilemap.SetTile(enemy.GridPosition, redOverlay);
-        }
-    }
-
-    public void CancelAttackSelection()
-    {
-        isSelectingAttack = false;
-        pendingAttackUnit = null;
-        attackableEnemies.Clear();
-        overlayTilemap.ClearAllTiles();
-    }
-
-    public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
-    {
-        pendingTradeUnit = unit;
-        tradablePartners = new List<PlayerUnit>(partners);
-        isSelectingTradePartner = true;
-
-        overlayTilemap.ClearAllTiles();
-        foreach (PlayerUnit partner in partners)
-            overlayTilemap.SetTile(partner.GridPosition, greenOverlay);
-    }
-    public void CancelTradeSelection()
-    {
-        isSelectingTradePartner = false;
-        pendingTradeUnit = null;
-        tradablePartners.Clear();
-        overlayTilemap.ClearAllTiles();
-    }
-
-    public void StartRescueTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
-    {
-        pendingRescueUnit = unit;
-        rescuableAllies = new List<PlayerUnit>(allies);
-        isSelectingRescue = true;
-
-        overlayTilemap.ClearAllTiles();
-        foreach (PlayerUnit ally in rescuableAllies)
-            overlayTilemap.SetTile(ally.GridPosition, greenOverlay);
-    }
-    public void CancelRescueSelection()
-    {
-        isSelectingRescue = false;
-        pendingRescueUnit = null;
-        rescuableAllies.Clear();
-        overlayTilemap.ClearAllTiles();
-    }
-
-    public void StartTakeTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
-    {
-        pendingTakeUnit = unit;
-        takeableAllies = new List<PlayerUnit>(allies);
-        isSelectingTake = true;
-
-        overlayTilemap.ClearAllTiles();
-        foreach (PlayerUnit ally in takeableAllies)
-        overlayTilemap.SetTile(ally.GridPosition, greenOverlay);
-    }
-    public void CancelTakeSelection()
-    {
-        isSelectingTake = false;
-        pendingTakeUnit = null;
-        takeableAllies.Clear();
-        overlayTilemap.ClearAllTiles();
+        ChangeState(new TargetSelectState(TargetKind.Attack, unit, CellsOf(enemies), OverlayColor.Red,
+            onConfirm: cell =>
+            {
+                EnemyUnit target = UnitAt<EnemyUnit>(cell);
+                WeaponInstance weapon = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
+                unit.inventory.Equip(weapon);
+                StartCoroutine(AttackThenDeactivate(unit, target, weapon));
+            },
+            onCancel: () => ReturnToMovement(unit)));
     }
 
     public void StartCaptureTargetSelection(PlayerUnit unit, List<EnemyUnit> enemies)
     {
-        pendingCaptureUnit = unit;
-        capturableEnemies = new List<EnemyUnit>(enemies);
-        isSelectingCapture = true;
-
-        overlayTilemap.ClearAllTiles();
-        foreach (EnemyUnit enemy in capturableEnemies)
-            overlayTilemap.SetTile(enemy.GridPosition, redOverlay);
+        ChangeState(new TargetSelectState(TargetKind.Capture, unit, CellsOf(enemies), OverlayColor.Red,
+            onConfirm: cell =>
+            {
+                EnemyUnit target = UnitAt<EnemyUnit>(cell);
+                WeaponInstance equipped = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
+                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
+                unit.inventory.Equip(weapon);
+                StartCoroutine(CaptureThenDeactivate(unit, target, weapon));
+            },
+            onCancel: () => ReturnToMovement(unit)));
     }
-    public void CancelCaptureSelection()
+
+    public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
     {
-        isSelectingCapture = false;
-        pendingCaptureUnit = null;
-        capturableEnemies.Clear();
-        overlayTilemap.ClearAllTiles();
+        ChangeState(new TargetSelectState(TargetKind.Trade, unit, CellsOf(partners), OverlayColor.Green,
+            onConfirm: cell => TradeMenuController.Instance.Show(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+    }
+
+    public void StartRescueTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
+    {
+        ChangeState(new TargetSelectState(TargetKind.Rescue, unit, CellsOf(allies), OverlayColor.Green,
+            onConfirm: cell => ActionMenuController.Instance.CompleteRescue(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
+    }
+
+    public void StartTakeTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
+    {
+        ChangeState(new TargetSelectState(TargetKind.Take, unit, CellsOf(allies), OverlayColor.Green,
+            onConfirm: cell => ActionMenuController.Instance.CompleteTake(unit, UnitAt<PlayerUnit>(cell)),
+            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
     }
 
     public void StartDropTileSelection(PlayerUnit unit)
     {
-        pendingDropUnit = unit;
-        isSelectingDropTile = true;
-        validDropTiles.Clear();
-
-        overlayTilemap.ClearAllTiles();
+        List<Vector3Int> dropTiles = new List<Vector3Int>();
         Vector3Int pos = unit.GridPosition;
         Vector3Int[] neighborCoords = {pos + Vector3Int.up, pos + Vector3Int.down, pos + Vector3Int.left, pos + Vector3Int.right };
         foreach (Vector3Int neighborCoord in neighborCoords)
         {
             bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is PlayerUnit || o is EnemyUnit);
             bool walkable = PathfinderController.Instance.GetNode(neighborCoord)?.walkable ?? false;
-            if (!occupied && walkable)
-            {
-                validDropTiles.Add(neighborCoord);
-                overlayTilemap.SetTile(neighborCoord, greenOverlay);
-            }
+            if (!occupied && walkable) dropTiles.Add(neighborCoord);
         }
+
+        ChangeState(new TargetSelectState(TargetKind.Drop, unit, dropTiles, OverlayColor.Green,
+            onConfirm: cell =>
+            {
+                unit.DropUnit(cell);
+                ActionMenuController.Instance.CompleteDrop();
+            },
+            onCancel: () => ActionMenuController.Instance.ReopenMenu()));
     }
-    public void CancelDropSelection()
+
+    // Undo the unit's move and let the player pick a new destination
+    private void ReturnToMovement(PlayerUnit unit)
     {
-        isSelectingDropTile = false;
-        pendingDropUnit = null;
-        validDropTiles.Clear();
-        overlayTilemap.ClearAllTiles();
+        unit.mover.CancelMove();
+        ChangeState(new UnitSelectedState(unit.mover));
+    }
+
+    private static List<Vector3Int> CellsOf(IEnumerable<Unit> units)
+    {
+        return units.Select(u => u.GridPosition).ToList();
+    }
+
+    private static T UnitAt<T>(Vector3Int cell) where T : Unit
+    {
+        return MapManager.Instance.GetObjectsAt(cell).OfType<T>().FirstOrDefault();
     }
 
 
@@ -216,164 +162,22 @@ public class InputController : MonoBehaviour
         if (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen) return;
         
 
-        //Player is selecting an enemy to attack
-        if (isSelectingAttack)
+        //Player is picking a target (attack, capture, trade, rescue, take, drop) - the state handles it
+        if (currentState != null)
         {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
-            if (clickedEnemy != null && attackableEnemies.Contains(clickedEnemy))
-            {
-                PlayerUnit attacker = pendingAttackUnit;
-                WeaponInstance weapon = (forecastWeapon != null && lastForecastTarget == clickedEnemy)
-                    ? forecastWeapon : attacker.inventory.EquippedWeapon;
-                CancelAttackSelection();
-                attacker.inventory.Equip(weapon);
-                StartCoroutine(AttackThenDeactivate(attacker, clickedEnemy, weapon));
-            }
+            currentState.OnClick(MapManager.Instance.WorldToGrid(worldPosition));
             return;
         }
 
-        if (isSelectingTradePartner)
-        {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            PlayerUnit clickedPartner = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
-            if (clickedPartner != null && tradablePartners.Contains(clickedPartner))
-            {
-                PlayerUnit trader = pendingTradeUnit;
-                CancelTradeSelection();
-                TradeMenuController.Instance.Show(trader, clickedPartner);
-            }
-            return;
-        }
-
-        if (isSelectingRescue)
-        {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            PlayerUnit clickedAlly = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
-            if (clickedAlly != null && rescuableAllies.Contains(clickedAlly))
-            {
-                PlayerUnit rescuer = pendingRescueUnit;
-                CancelRescueSelection();
-                ActionMenuController.Instance.CompleteRescue(rescuer, clickedAlly);
-            }
-            return;
-        }
-
-        if (isSelectingTake)
-        {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            PlayerUnit clickedAlly = objectsAtTile.OfType<PlayerUnit>().FirstOrDefault();
-            if (clickedAlly != null && takeableAllies.Contains(clickedAlly))
-            {
-                PlayerUnit rescuer = pendingTakeUnit;
-                CancelTakeSelection();
-                ActionMenuController.Instance.CompleteTake(rescuer, clickedAlly);
-            }
-            return;
-        }
-
-        if (isSelectingCapture)
-        {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
-            if (clickedEnemy != null && capturableEnemies.Contains(clickedEnemy))
-            {
-                PlayerUnit capturer = pendingCaptureUnit;
-                WeaponInstance equipped = (forecastWeapon != null && lastForecastTarget == clickedEnemy) ? forecastWeapon : capturer.inventory.EquippedWeapon;
-                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : capturer.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
-                CancelCaptureSelection();
-                capturer.inventory.Equip(weapon);
-                StartCoroutine(CaptureThenDeactivate(capturer, clickedEnemy, weapon));
-            }
-            return;
-        }
-
-        if (isSelectingDropTile)
-        {
-            Vector3Int clickedGrid = MapManager.Instance.WorldToGrid(worldPosition);
-            if(validDropTiles.Contains(clickedGrid))
-            {
-                PlayerUnit dropper = pendingDropUnit;
-                CancelDropSelection();
-                dropper.DropUnit(clickedGrid);
-                ActionMenuController.Instance.CompleteDrop();
-            }
-            return;
-        }
-
+        List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
         if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
         {
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition))    ;
             //If Unit clicked after moving act as if wait was clicked
             if (objectsAtTile.Contains(ActionMenuController.Instance.PendingUnit)) ActionMenuController.Instance.OnWaitClicked();
             return;
         }
         
-
-        //Unit Is Selected, Awaiting User to pick where to go to
-        if (currentMover)
-        {
-            Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
-            TileBase tile = tilemap.GetTile(gridPosition);
-
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-
-            Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-            Vector3Int targetGrid = tilemap.WorldToCell(worldPosition);
-
-            if (playerGrid == targetGrid)
-            {
-                currentMover.DeactivatePlayer();
-                currentMover = null;
-                overlayTilemap.ClearAllTiles();
-                ClearLine();
-                return;
-            }
-            
-            EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
-            if (clickedEnemy != null && !currentMover.isMoving)
-            {
-                WeaponInstance weapon = (forecastWeapon != null && lastForecastTarget == clickedEnemy) ? forecastWeapon : null;
-                Node bestTile = (forecastBestTile != null && lastForecastTarget == clickedEnemy) ? forecastBestTile : null;
-                if (weapon == null || bestTile == null)
-                {
-                    MovementClass mc2 = currentMover.playerUnit.unitAttributes.movementClass;
-                    List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, mc2);
-                    (weapon, bestTile) = FindBestAttackOption(currentMover.playerUnit, clickedEnemy, reachable);
-                }
-                if (weapon != null && bestTile != null)
-                {
-                    MovementClass mc = currentMover.playerUnit.unitAttributes.movementClass;
-                    currentMover.playerUnit.inventory.Equip(weapon);
-                    List<Node> path = PathfinderController.Instance.FindPath(playerGrid, bestTile.gridPosition, mc);
-                    currentMover.QueueAttack(clickedEnemy, weapon);
-                    overlayTilemap.ClearAllTiles();
-                    currentMover.StartMoving(path, currentMover.playerUnit.unitAttributes.movement);
-                    currentMover = null;
-                    ClearLine();
-                }
-                return;
-            }
-
-            bool validTile = !objectsAtTile.Any(obj => obj is PlayerUnit || obj is EnemyUnit);
-            if (validTile && tile != null)
-            {
-
-                MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
-                List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid, movementClass);
-                if (path != null && path.Count > 0 && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
-                {
-                    overlayTilemap.ClearAllTiles();
-                    currentMover.StartMoving(path, currentMover.playerUnit.unitAttributes.movement);
-                    currentMover = null;
-                    ClearLine();
-                }
-            }
-        }
-        else
-        {
             MapManager.Instance.RefreshMap();
-            List<MapObject> objectsAtTile = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
 
             Unit hoveredUnit = objectsAtTile.OfType<Unit>().FirstOrDefault();
             if (hoveredUnit == null) return;
@@ -386,7 +190,7 @@ public class InputController : MonoBehaviour
                 Mover mover = playerUnit.mover;
                 if (mover != null && !mover.isMoving)
                 {
-                    currentMover = mover;
+                    ChangeState(new UnitSelectedState(mover));
                 }
                 return;
             }
@@ -395,7 +199,7 @@ public class InputController : MonoBehaviour
                 if(!toggledEnemies.Remove(clickedEnemy)) toggledEnemies.Add(clickedEnemy);
                 clickedEnemy.UpdateIndicators();
             }
-        }
+        
     }
 
     // 
@@ -407,39 +211,9 @@ public class InputController : MonoBehaviour
         {
             TradeMenuController.Instance.Close();
         }
-        else if (isSelectingTradePartner)
+        else if (currentState != null)
         {
-            CancelTradeSelection();
-            ActionMenuController.Instance.ReopenMenu();
-        }
-        else if (isSelectingDropTile)
-        {
-            CancelDropSelection();
-            ActionMenuController.Instance.ReopenMenu();
-        }
-        else if (isSelectingRescue)
-        {
-            CancelRescueSelection();
-            ActionMenuController.Instance.ReopenMenu();
-        }
-        else if (isSelectingTake)
-        {
-            CancelTakeSelection();
-            ActionMenuController.Instance.ReopenMenu();
-        }
-        else if (isSelectingAttack)
-        {
-            PlayerUnit unit = pendingAttackUnit;
-            CancelAttackSelection();
-            unit.mover.CancelMove();
-            currentMover = unit.mover;
-        }
-        else if (isSelectingCapture)
-        {
-            PlayerUnit unit = pendingCaptureUnit;
-            CancelCaptureSelection();
-            unit.mover.CancelMove();
-            currentMover = unit.mover;
+            currentState.OnRightClick();
         }
         else if (InventoryMenuController.Instance != null && InventoryMenuController.Instance.isSubMenuOpen)
         {
@@ -453,23 +227,15 @@ public class InputController : MonoBehaviour
         {
             ActionMenuController.Instance.CancelMenu();
         }
-
-        else if (currentMover != null)
-        {
-            currentMover = null;
-            overlayTilemap.ClearAllTiles();
-            ClearLine();
-        }
     }
 
     // Update is called once per frame
     void Update()
     {
         Vector2 screenPosition = Mouse.current.position.ReadValue();
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, reticalTransform.position.z));
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
 
         Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
-        TileBase tile = tilemap.GetTile(gridPosition); // This is the currently highlighted tile
 
         RefreshRangeOverlay(gridPosition);
 
@@ -486,202 +252,53 @@ public class InputController : MonoBehaviour
 
         if ((InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
             || (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
-            || isSelectingTradePartner || isSelectingRescue || isSelectingCapture || isSelectingDropTile || isSelectingTake)
+            || (TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen))
         {
-            reticalTransform.gameObject.SetActive(false);
+            MapOverlay.Instance.HideReticle();
         }
-        else if (currentMover)
+        else if (currentState != null)
         {
-            Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-            MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
-            List<Node> path = PathfinderController.Instance.FindPath(playerGrid, gridPosition, movementClass);
-
-            if (!currentMover.isMoving)
-            {
-                ShowMovementRange();
-            }
-
-            List<MapObject> hoveredObjects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-            EnemyUnit hoveredEnemy = hoveredObjects.OfType<EnemyUnit>().FirstOrDefault();
-
-            if (hoveredEnemy != null && !currentMover.isMoving)
-            {
-                if (forecastBestTile != null)
-                    DrawPath(forecastBestTile.gridPosition);
-                else
-                    ClearLine();
-            }
-            else if (tile != null && !currentMover.isMoving && path != null && PathfinderController.Instance.GetPathCost(path, movementClass) <= currentMover.playerUnit.unitAttributes.movement)
-            {
-                if (reticalTransform.gameObject.activeSelf == false) DrawPath(gridPosition);
-                reticalTransform.gameObject.SetActive(true);
-            }
-            else
-            {
-                reticalTransform.gameObject.SetActive(false);
-                ClearLine();
-            }
-
-            //DrawLine if Retical is in diff position
-            if (reticalTransform.position != tilemap.GetCellCenterWorld(gridPosition))
-            {
-                if (reticalTransform.gameObject.activeSelf == true) DrawPath(gridPosition);
-                reticalTransform.position = tilemap.GetCellCenterWorld(gridPosition);
-            }
+            currentState.Tick(gridPosition);
         }
         else
         {
-            reticalTransform.gameObject.SetActive(true);
-            reticalTransform.position = tilemap.GetCellCenterWorld(gridPosition);
-        }
-    }
-
-    public void DrawPath(Vector3Int gridPosition)
-    {
-
-        Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-        Vector3Int targetGrid = gridPosition;
-
-
-
-        MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
-        List<Node> path = PathfinderController.Instance.FindPath(playerGrid, targetGrid, movementClass);
-
-        if (path == null || path.Count == 0 || PathfinderController.Instance.GetPathCost(path, movementClass) > currentMover.playerUnit.unitAttributes.movement)
-        {
-            ClearLine();
-            return;
-        }
-
-        lineRenderer.positionCount = path.Count + 1;
-        lineRenderer.SetPosition(0, tilemap.GetCellCenterWorld(path[0].parent.gridPosition));
-        for (int i = 0; i < path.Count; i++)
-        {
-            lineRenderer.SetPosition(i + 1, tilemap.GetCellCenterWorld(path[i].gridPosition));
-        }
-    }
-
-    public void ShowMovementRange()
-    {
-        overlayTilemap.ClearAllTiles();
-
-        Vector3Int playerPosition = tilemap.WorldToCell(currentMover.transform.position);
-        MovementClass movementClass = currentMover.playerUnit.unitAttributes.movementClass;
-        List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerPosition, currentMover.playerUnit.unitAttributes.movement, movementClass);
-
-        var reachableSet = new HashSet<Node>(reachable);
-        var attackableSet = new HashSet<Node>();
-
-        foreach (Node node in reachable)
-        {
-            foreach (ItemInstance item in currentMover.playerUnit.inventory.items)
-            {
-                if (item is not WeaponInstance weapon) continue;
-                List<Node> weaponRange = PathfinderController.Instance.GetAttackableTiles(
-                    tilemap.GetCellCenterWorld(node.gridPosition),
-                    weapon.minRange,
-                    weapon.maxRange
-                );
-                foreach (Node attackNode in weaponRange)
-                {
-                    attackableSet.Add(attackNode);
-                }
-            }
-        }
-
-
-        foreach (Node node in PathfinderController.Instance.GetAllNodes())
-        {
-            if (reachableSet.Contains(node))
-            {
-                overlayTilemap.SetTile(node.gridPosition, greenOverlay);
-            }
-            else if (attackableSet.Contains(node))
-            {
-                overlayTilemap.SetTile(node.gridPosition, redOverlay);
-            }
-
-        }
-    }
-
-    private (HashSet<Node> reachable, HashSet<Node>attackable) ComputeUnitRange(Unit unit)
-    {
-        List<Node>reachable = PathfinderController.Instance.GetReachableNodes(unit.GridPosition, unit.unitAttributes.movement, unit.unitAttributes.movementClass);
-        var reachableSet = new HashSet<Node>(reachable);
-        var attackableSet = new HashSet<Node>();
-
-        foreach (Node node in reachable)
-        {
-            foreach (ItemInstance item in unit.inventory.items)
-            {
-                if(item is not WeaponInstance weapon) continue;
-                foreach (Node attackNode in PathfinderController.Instance.GetAttackableTiles(tilemap.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
-                {
-                    attackableSet.Add(attackNode);
-                }
-            }
-        }
-        return (reachableSet, attackableSet);
-    }
-
-    private void DrawRangeOverlay(Tilemap rangeOverlayTilemap, HashSet<Node> reachableNodes, HashSet<Node> attackableNodes, Tile moveTile, Tile attackTile)
-    {
-        foreach (Node node in PathfinderController.Instance.GetAllNodes())
-        {
-            if(reachableNodes.Contains(node))
-            {
-                rangeOverlayTilemap.SetTile(node.gridPosition, moveTile);
-            }
-            else if (attackableNodes.Contains(node))
-            {
-                 rangeOverlayTilemap.SetTile(node.gridPosition, attackTile);
-            }
+            MapOverlay.Instance.ShowReticle(gridPosition);
         }
     }
 
     private void RefreshRangeOverlay(Vector3Int hoveredCoord)
     {
-        enemyRangeOverlayTilemap.ClearAllTiles();
+        MapOverlay.Instance.ClearDangerZones();
 
         toggledEnemies.RemoveWhere(enemy => enemy == null || !enemy.gameObject.activeInHierarchy);
 
         foreach(EnemyUnit enemy in toggledEnemies)
         {
-            var (reachable, attackable) = ComputeUnitRange(enemy);
-            DrawRangeOverlay(enemyRangeOverlayTilemap, reachable, attackable, redOverlayDark, redOverlayDark);
+            var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(enemy);
+            MapOverlay.Instance.AddDangerZone(reachable, attackable);
         }
 
         if (!IsBaseIdleState()) return;
-        overlayTilemap.ClearAllTiles();
+        MapOverlay.Instance.ClearSelection();
 
         Unit hoveredUnit = MapManager.Instance.GetObjectsAt(hoveredCoord).OfType<Unit>().FirstOrDefault();
         if (hoveredUnit == null) return;
         bool hoveredUnitIsPlayer = hoveredUnit is PlayerUnit;
-        var (hoveredReachable, hoveredAttackable) = ComputeUnitRange(hoveredUnit);
-        DrawRangeOverlay(overlayTilemap, hoveredReachable, hoveredAttackable, hoveredUnitIsPlayer ? greenOverlayLight : redOverlayLight, redOverlayLight);
+        var (hoveredReachable, hoveredAttackable) = PathfinderController.Instance.GetUnitRange(hoveredUnit);
+        MapOverlay.Instance.ShowRange(hoveredReachable, hoveredAttackable, hoveredUnitIsPlayer ? OverlayColor.GreenLight : OverlayColor.RedLight, OverlayColor.Red);
 
     }
 
     private bool IsBaseIdleState()
     {
-        return !currentMover
-        && !(InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
+        return 
+        !(InventoryMenuController.Instance != null && InventoryMenuController.Instance.isMenuOpen)
         && !(ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
         && !(TradeMenuController.Instance != null && TradeMenuController.Instance.isMenuOpen)
-        && !isSelectingTradePartner
-        && !isSelectingRescue
-        && !isSelectingCapture
-        && !isSelectingDropTile
-        && !isSelectingTake
-        && !isSelectingAttack
-        ;
+        && currentState == null;
     }
 
-    public void ClearLine()
-    {
-        lineRenderer.positionCount = 0;
-    }
+    
 
     private void OnScroll(InputAction.CallbackContext context)
     {
@@ -701,33 +318,20 @@ public class InputController : MonoBehaviour
             lastForecastTarget = hoveredEnemy;
         }
 
-        if (isSelectingAttack || isSelectingCapture)
+        if (currentState is TargetSelectState targeting && targeting.IsCombat)
         {
-            if (hoveredEnemy != null && attackableEnemies.Contains(hoveredEnemy))
+            if (hoveredEnemy != null && targeting.IsTarget(hoveredEnemy.GridPosition))
             {
-                int dist = Mathf.Abs(pendingAttackUnit.GridPosition.x - hoveredEnemy.GridPosition.x)
-                         + Mathf.Abs(pendingAttackUnit.GridPosition.y - hoveredEnemy.GridPosition.y);
-                List<WeaponInstance> valid = GetWeaponsInRange(pendingAttackUnit, dist);
+                PlayerUnit unit = targeting.Unit;
+                int dist = Mathf.Abs(unit.GridPosition.x - hoveredEnemy.GridPosition.x)
+                         + Mathf.Abs(unit.GridPosition.y - hoveredEnemy.GridPosition.y);
+                List<WeaponInstance> valid = GetWeaponsInRange(unit, dist);
                 if (valid.Count > 0)
                 {
                     weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
                     forecastWeapon = valid[weaponCycleIndex];
                     forecastBestTile = null;
-                    CombatForecastController.Instance?.Show(pendingAttackUnit, hoveredEnemy, forecastWeapon);
-                    return;
-                }
-            }
-            else if (hoveredEnemy != null && capturableEnemies.Contains(hoveredEnemy))
-            {
-                int dist = Mathf.Abs(pendingCaptureUnit.GridPosition.x - hoveredEnemy.GridPosition.x)
-                         + Mathf.Abs(pendingCaptureUnit.GridPosition.y - hoveredEnemy.GridPosition.y);
-                List<WeaponInstance> valid = GetWeaponsInRange(pendingCaptureUnit, dist);
-                if (valid.Count > 0)
-                {
-                    weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
-                    forecastWeapon = valid[weaponCycleIndex];
-                    forecastBestTile = null;
-                    CombatForecastController.Instance?.Show(pendingCaptureUnit, hoveredEnemy, forecastWeapon, null, true);
+                    CombatForecastController.Instance?.Show(unit, hoveredEnemy, forecastWeapon, null, targeting.Kind == TargetKind.Capture);
                     return;
                 }
             }
@@ -805,14 +409,12 @@ public class InputController : MonoBehaviour
         List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
         Unit hoveredUnit = objects.OfType<Unit>().FirstOrDefault();
 
-        if (isSelectingAttack || isSelectingCapture)
+        if (currentState is TargetSelectState targeting && targeting.IsCombat)
         {
-            if (hoveredUnit is EnemyUnit hoveredEnemy && (attackableEnemies.Contains(hoveredEnemy) || capturableEnemies.Contains(hoveredEnemy)))
+            if (hoveredUnit is EnemyUnit hoveredEnemy && targeting.IsTarget(hoveredEnemy.GridPosition))
                 HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
-            else if (pendingAttackUnit != null)
-                HoverInfoController.Instance?.ShowUnit(pendingAttackUnit);
-            else if (pendingCaptureUnit != null)
-                HoverInfoController.Instance?.ShowUnit(pendingCaptureUnit);
+            else
+                HoverInfoController.Instance?.ShowUnit(targeting.Unit);
             return;
         }
 
@@ -865,7 +467,7 @@ public class InputController : MonoBehaviour
         HoverInfoController.Instance?.Hide();
     }
 
-    private (WeaponInstance weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
+    public (WeaponInstance weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
     {
         int bestScore = int.MinValue;
         WeaponInstance bestWeapon = null;
