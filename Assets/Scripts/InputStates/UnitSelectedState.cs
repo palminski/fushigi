@@ -87,7 +87,7 @@ public class UnitSelectedState : InputState
             {
                 MovementClass mc2 = Mover.playerUnit.unitAttributes.movementClass;
                 List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGridPos, Mover.playerUnit.unitAttributes.movement, mc2);
-                (weapon, bestTile) = inputController.FindBestAttackOption(Mover.playerUnit, clickedEnemy, reachable);
+                (weapon, bestTile) = AttackPlanner.BestAttack(Mover.playerUnit, clickedEnemy, reachable);
             }
             if (weapon != null && bestTile != null)
             {

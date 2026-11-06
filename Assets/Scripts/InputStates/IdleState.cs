@@ -15,7 +15,7 @@ public class IdleState : InputState
         }
 
         var (reachable, attackable) = PathfinderController.Instance.GetUnitRange(hoveredUnit);
-        OverlayColor moveColor = hoveredUnit is PlayerUnit ? OverlayColor.Green : OverlayColor.RedLight;
+        OverlayColor moveColor = hoveredUnit is PlayerUnit ? OverlayColor.GreenLight : OverlayColor.RedLight;
         MapOverlay.Instance.ShowRange(reachable,attackable,moveColor,OverlayColor.Red);
     }
 

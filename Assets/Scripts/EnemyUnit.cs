@@ -59,6 +59,8 @@ public class EnemyUnit : Unit
 
                     CombatPreview preview = CombatCalculator.Preview(this, playerUnit, weapon, reachableNode.gridPosition);
 
+                    // AI scoring is deliberately the reverse of the player's (AttackPlanner.Score):
+                    // enemies go for kills first and don't mind taking a counter.
                     int score = preview.damageDealt;
                     if (preview.killsDefender) score += 1000;
                     if (!preview.defenderCanCounter) score += 100;

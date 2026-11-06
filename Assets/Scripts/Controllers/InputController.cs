@@ -74,7 +74,7 @@ public class InputController : MonoBehaviour
                 EnemyUnit target = UnitAt<EnemyUnit>(cell);
                 WeaponInstance weapon = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
                 unit.inventory.Equip(weapon);
-                StartCoroutine(AttackThenDeactivate(unit, target, weapon));
+                StartCoroutine(unit.AttackAndEndTurn(target, weapon));
             },
             onCancel: () => ReturnToMovement(unit)));
     }
@@ -88,7 +88,7 @@ public class InputController : MonoBehaviour
                 WeaponInstance equipped = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
                 WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
                 unit.inventory.Equip(weapon);
-                StartCoroutine(CaptureThenDeactivate(unit, target, weapon));
+                StartCoroutine(unit.CaptureAndEndTurn(target, weapon));
             },
             onCancel: () => ReturnToMovement(unit)));
     }
@@ -214,7 +214,7 @@ public class InputController : MonoBehaviour
 
         Vector3Int gridPosition = tilemap.WorldToCell(worldPosition);
 
-        RefreshDangerZones(gridPosition);
+        RefreshDangerZones();
 
         if (GameController.Instance.gamePhase == GamePhase.Player)
         {
@@ -237,7 +237,7 @@ public class InputController : MonoBehaviour
         }
     }
 
-    private void RefreshDangerZones(Vector3Int hoveredCoord)
+    private void RefreshDangerZones()
     {
         MapOverlay.Instance.ClearDangerZones();
 
@@ -275,9 +275,8 @@ public class InputController : MonoBehaviour
             if (hoveredEnemy != null && targeting.IsTarget(hoveredEnemy.GridPosition))
             {
                 PlayerUnit unit = targeting.Unit;
-                int dist = Mathf.Abs(unit.GridPosition.x - hoveredEnemy.GridPosition.x)
-                         + Mathf.Abs(unit.GridPosition.y - hoveredEnemy.GridPosition.y);
-                List<WeaponInstance> valid = GetWeaponsInRange(unit, dist);
+                int dist = AttackPlanner.Distance(unit.GridPosition, hoveredEnemy.GridPosition);
+                List<WeaponInstance> valid = AttackPlanner.WeaponsInRange(unit, dist);
                 if (valid.Count > 0)
                 {
                     weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
@@ -296,7 +295,7 @@ public class InputController : MonoBehaviour
         {
             Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
             List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, currentMover.playerUnit.unitAttributes.movementClass);
-            List<(WeaponInstance weapon, Node tile)> valid = GetWeaponOptionsForTarget(currentMover.playerUnit, hoveredEnemy, reachable);
+            List<(WeaponInstance weapon, Node tile)> valid = AttackPlanner.AttackOptions(currentMover.playerUnit, hoveredEnemy, reachable);
             if (valid.Count > 0)
             {
                 weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
@@ -309,51 +308,6 @@ public class InputController : MonoBehaviour
 
         forecastWeapon = null; forecastBestTile = null;
         CombatForecastController.Instance?.Hide();
-    }
-
-    private List<WeaponInstance> GetWeaponsInRange(PlayerUnit unit, int dist)
-    {
-        var result = new List<WeaponInstance>();
-        foreach (ItemInstance item in unit.inventory.items)
-            if (item is WeaponInstance w && w.CanHitAt(dist)) result.Add(w);
-        return result;
-    }
-
-    private List<(WeaponInstance weapon, Node tile)> GetWeaponOptionsForTarget(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
-    {
-        var result = new List<(WeaponInstance, Node)>();
-        foreach (ItemInstance item in unit.inventory.items)
-        {
-            if (item is not WeaponInstance weapon) continue;
-            Node best = FindBestTileForWeapon(unit, target, weapon, reachable);
-            if (best != null) result.Add((weapon, best));
-        }
-        return result;
-    }
-
-    private Node FindBestTileForWeapon(PlayerUnit unit, EnemyUnit target, WeaponInstance weapon, List<Node> reachable)
-    {
-        int bestScore = int.MinValue;
-        Node bestTile = null;
-        Vector3Int targetPos = target.GridPosition;
-        foreach (Node node in reachable)
-        {
-            var occupants = MapManager.Instance.GetObjectsAt(node.gridPosition);
-            if (occupants.Any(o => o is PlayerUnit p && p != unit || o is EnemyUnit)) continue;
-            int dist = Mathf.Abs(node.gridPosition.x - targetPos.x) + Mathf.Abs(node.gridPosition.y - targetPos.y);
-            if (!weapon.CanHitAt(dist)) continue;
-            CombatPreview preview = CombatCalculator.Preview(unit, target, weapon, node.gridPosition);
-            int score = preview.damageDealt + (preview.killsDefender ? 100 : 0) + (!preview.defenderCanCounter ? 1000 : 0);
-            if (score > bestScore) { bestScore = score; bestTile = node; }
-        }
-        return bestTile;
-    }
-
-    private IEnumerator AttackThenDeactivate(PlayerUnit attacker, EnemyUnit target, WeaponInstance weapon)
-    {
-        if (weapon != null)
-            yield return StartCoroutine(attacker.AttackCoroutine(target, weapon));
-        if (attacker != null) attacker.SetInactive();
     }
 
     private void UpdateHoverInfo(Vector3 worldPosition)
@@ -385,7 +339,7 @@ public class InputController : MonoBehaviour
                     currentMover.transform.position,
                     selected.unitAttributes.movement,
                     selected.unitAttributes.movementClass);
-                var (weapon, _) = FindBestAttackOption(selected, hoveredEnemy, reachable);
+                var (weapon, _) = AttackPlanner.BestAttack(selected, hoveredEnemy, reachable);
                 if (weapon != null)
                 {
                     HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
@@ -418,44 +372,6 @@ public class InputController : MonoBehaviour
         }
         HoverInfoController.Instance?.Hide();
     }
-
-    public (WeaponInstance weapon, Node tile) FindBestAttackOption(PlayerUnit unit, EnemyUnit target, List<Node> reachable)
-    {
-        int bestScore = int.MinValue;
-        WeaponInstance bestWeapon = null;
-        Node bestTile = null;
-        Vector3Int targetPosition = target.GridPosition;
-
-        foreach(Node node in reachable)
-        {
-            var occupants = MapManager.Instance.GetObjectsAt(node.gridPosition);
-            if (occupants.Any(o => o is PlayerUnit p && p != unit || o is EnemyUnit)) continue;
-
-            foreach (ItemInstance item in unit.inventory.items)
-            {
-                if (item is not WeaponInstance weapon) continue;
-                int dist = Mathf.Abs(node.gridPosition.x - targetPosition.x) + Mathf.Abs(node.gridPosition.y - targetPosition.y);
-                if (dist < weapon.minRange || dist > weapon.maxRange) continue;
-
-                CombatPreview preview = CombatCalculator.Preview(unit, target, weapon, node.gridPosition);
-                int score = preview.damageDealt;
-                if (preview.killsDefender) score += 100;
-                if (!preview.defenderCanCounter) score += 1000;
-
-                if (score > bestScore) {bestScore = score; bestWeapon = weapon; bestTile = node;}
-            }
-        }
-
-        return (bestWeapon, bestTile);
-    }
-
-    private IEnumerator CaptureThenDeactivate(PlayerUnit capturer, EnemyUnit target, WeaponInstance weapon)
-    {
-        if (weapon != null)
-        yield return StartCoroutine(capturer.CaptureCoroutine(target, weapon));
-        if (capturer != null) capturer.SetInactive();
-    }
-
 
     public void ReturnToIdle()
     {
