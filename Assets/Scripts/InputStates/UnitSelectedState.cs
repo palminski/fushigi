@@ -8,6 +8,7 @@ public class UnitSelectedState : InputState
 {
     InputController inputController = InputController.Instance;
     public Mover Mover { get; }
+    private readonly AttackForecast forecast = new AttackForecast();
 
     public UnitSelectedState(Mover mover)
     {
@@ -18,6 +19,7 @@ public class UnitSelectedState : InputState
     {
         MapOverlay.Instance.ClearSelection();
         MapOverlay.Instance.ClearPath();
+        forecast.HidePanel();
     }
 
     // Every frame: show this unit's range, and the path it would take to the hovered cell
@@ -33,15 +35,24 @@ public class UnitSelectedState : InputState
         MapOverlay.Instance.ShowRange(reachable, attackable, OverlayColor.Green, OverlayColor.Red);
         MapOverlay.Instance.ShowReticle(hoveredCell);
 
-        // Hovering an enemy: show the path to the tile we'd attack from
+        // Hovering an enemy: forecast the attack and show the path to the tile we'd attack from
         EnemyUnit hoveredEnemy = MapManager.Instance.GetObjectsAt(hoveredCell).OfType<EnemyUnit>().FirstOrDefault();
         if (hoveredEnemy != null)
         {
-            Node attackFrom = inputController.forecastBestTile;
+            var options = AttackPlanner.AttackOptions(Mover.playerUnit, hoveredEnemy, reachable.ToList());
+            forecast.Show(Mover.playerUnit, hoveredEnemy, options);
+
+            bool canAttack = options.Count > 0;
+            HoverInfoController.Instance?.ShowUnit(canAttack ? hoveredEnemy : Mover.playerUnit);
+
+            Node attackFrom = forecast.AttackFromFor(hoveredEnemy);
             if (attackFrom != null) ShowPathTo(attackFrom.gridPosition);
             else MapOverlay.Instance.ClearPath();
             return;
         }
+
+        forecast.Clear();
+        HoverInfoController.Instance?.ShowUnit(Mover.playerUnit);
 
         bool onMap = inputController.tilemap.GetTile(hoveredCell) != null;
         if (onMap && ShowPathTo(hoveredCell)) return;
@@ -81,8 +92,8 @@ public class UnitSelectedState : InputState
         EnemyUnit clickedEnemy = objectsAtTile.OfType<EnemyUnit>().FirstOrDefault();
         if (clickedEnemy != null && !Mover.isMoving)
         {
-            WeaponInstance weapon = (inputController.forecastWeapon != null && inputController.lastForecastTarget == clickedEnemy) ? inputController.forecastWeapon : null;
-            Node bestTile = (inputController.forecastBestTile != null && inputController.lastForecastTarget == clickedEnemy) ? inputController.forecastBestTile : null;
+            WeaponInstance weapon = forecast.WeaponFor(clickedEnemy);
+            Node bestTile = forecast.AttackFromFor(clickedEnemy);
             if (weapon == null || bestTile == null)
             {
                 MovementClass mc2 = Mover.playerUnit.unitAttributes.movementClass;
@@ -118,6 +129,11 @@ public class UnitSelectedState : InputState
     public override void OnRightClick()
     {
         inputController.ReturnToIdle();
+    }
+
+    public override void OnScroll(int direction)
+    {
+        forecast.Scroll(direction);
     }
 
     public override string ToString()

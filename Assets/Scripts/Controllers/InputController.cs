@@ -10,15 +10,9 @@ public class InputController : MonoBehaviour
     public static InputController Instance { get; private set; }
     public Tilemap tilemap;
     public HashSet<EnemyUnit> toggledEnemies = new HashSet<EnemyUnit>();
-    public Mover currentMover => (currentState as UnitSelectedState)?.Mover;
     private GameInput inputActions;
     private InputState currentState;
     [SerializeField] private string currentStateName = "None"; // read-only, shown in the Inspector for debugging
-
-    private int weaponCycleIndex = 0;
-    public EnemyUnit lastForecastTarget = null;
-    public WeaponInstance forecastWeapon = null;
-    public Node forecastBestTile = null;
 
     void Awake()
     {
@@ -68,29 +62,33 @@ public class InputController : MonoBehaviour
     // 
     public void StartAttackTargetSelection(PlayerUnit unit, List<EnemyUnit> enemies)
     {
+        AttackForecast forecast = new AttackForecast();
         ChangeState(new TargetSelectState(TargetKind.Attack, unit, CellsOf(enemies), OverlayColor.Red,
             onConfirm: cell =>
             {
                 EnemyUnit target = UnitAt<EnemyUnit>(cell);
-                WeaponInstance weapon = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
+                WeaponInstance weapon = forecast.WeaponFor(target) ?? unit.inventory.EquippedWeapon;
                 unit.inventory.Equip(weapon);
                 StartCoroutine(unit.AttackAndEndTurn(target, weapon));
             },
-            onCancel: () => ReturnToMovement(unit)));
+            onCancel: () => ReturnToMovement(unit),
+            forecast: forecast));
     }
 
     public void StartCaptureTargetSelection(PlayerUnit unit, List<EnemyUnit> enemies)
     {
+        AttackForecast forecast = new AttackForecast();
         ChangeState(new TargetSelectState(TargetKind.Capture, unit, CellsOf(enemies), OverlayColor.Red,
             onConfirm: cell =>
             {
                 EnemyUnit target = UnitAt<EnemyUnit>(cell);
-                WeaponInstance equipped = (forecastWeapon != null && lastForecastTarget == target) ? forecastWeapon : unit.inventory.EquippedWeapon;
+                WeaponInstance equipped = forecast.WeaponFor(target) ?? unit.inventory.EquippedWeapon;
                 WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
                 unit.inventory.Equip(weapon);
                 StartCoroutine(unit.CaptureAndEndTurn(target, weapon));
             },
-            onCancel: () => ReturnToMovement(unit)));
+            onCancel: () => ReturnToMovement(unit),
+            forecast: forecast));
     }
 
     public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
@@ -216,20 +214,14 @@ public class InputController : MonoBehaviour
 
         RefreshDangerZones();
 
-        if (GameController.Instance.gamePhase == GamePhase.Player)
-        {
-            UpdateHoverInfo(worldPosition);
-            UpdateCombatForecast(worldPosition);
-        }
-        else
-        {
-            HoverInfoController.Instance?.Hide();
-            CombatForecastController.Instance?.Hide();
-        }
-
         if(IsMenuOpen())
         {
+            // The menus handle their own input; the hover panel shows whose menu it is
             MapOverlay.Instance.HideReticle();
+            CombatForecastController.Instance?.Hide();
+            PlayerUnit menuUnit = ActionMenuController.Instance != null ? ActionMenuController.Instance.PendingUnit : null;
+            if (menuUnit != null) HoverInfoController.Instance?.ShowUnit(menuUnit);
+            else HoverInfoController.Instance?.Hide();
         }
         else
         {
@@ -255,122 +247,8 @@ public class InputController : MonoBehaviour
     private void OnScroll(InputAction.CallbackContext context)
     {
         float scroll = context.ReadValue<float>();
-        if (scroll > 0) weaponCycleIndex++;
-        else if (scroll < 0) weaponCycleIndex--;
-    }
-
-    private void UpdateCombatForecast(Vector3 worldPosition)
-    {
-        List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-        EnemyUnit hoveredEnemy = objects.OfType<EnemyUnit>().FirstOrDefault();
-
-        if (hoveredEnemy != lastForecastTarget)
-        {
-            weaponCycleIndex = 0;
-            lastForecastTarget = hoveredEnemy;
-        }
-
-        if (currentState is TargetSelectState targeting && targeting.IsCombat)
-        {
-            if (hoveredEnemy != null && targeting.IsTarget(hoveredEnemy.GridPosition))
-            {
-                PlayerUnit unit = targeting.Unit;
-                int dist = AttackPlanner.Distance(unit.GridPosition, hoveredEnemy.GridPosition);
-                List<WeaponInstance> valid = AttackPlanner.WeaponsInRange(unit, dist);
-                if (valid.Count > 0)
-                {
-                    weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
-                    forecastWeapon = valid[weaponCycleIndex];
-                    forecastBestTile = null;
-                    CombatForecastController.Instance?.Show(unit, hoveredEnemy, forecastWeapon, null, targeting.Kind == TargetKind.Capture);
-                    return;
-                }
-            }
-            forecastWeapon = null; forecastBestTile = null;
-            CombatForecastController.Instance?.Hide();
-            return;
-        }
-
-        if (currentMover != null && !currentMover.isMoving && hoveredEnemy != null)
-        {
-            Vector3Int playerGrid = tilemap.WorldToCell(currentMover.transform.position);
-            List<Node> reachable = PathfinderController.Instance.GetReachableNodes(playerGrid, currentMover.playerUnit.unitAttributes.movement, currentMover.playerUnit.unitAttributes.movementClass);
-            List<(WeaponInstance weapon, Node tile)> valid = AttackPlanner.AttackOptions(currentMover.playerUnit, hoveredEnemy, reachable);
-            if (valid.Count > 0)
-            {
-                weaponCycleIndex = ((weaponCycleIndex % valid.Count) + valid.Count) % valid.Count;
-                forecastWeapon = valid[weaponCycleIndex].weapon;
-                forecastBestTile = valid[weaponCycleIndex].tile;
-                CombatForecastController.Instance?.Show(currentMover.playerUnit, hoveredEnemy, forecastWeapon, forecastBestTile.gridPosition);
-                return;
-            }
-        }
-
-        forecastWeapon = null; forecastBestTile = null;
-        CombatForecastController.Instance?.Hide();
-    }
-
-    private void UpdateHoverInfo(Vector3 worldPosition)
-    {
-        List<MapObject> objects = MapManager.Instance.GetObjectsAt(MapManager.Instance.WorldToGrid(worldPosition));
-        Unit hoveredUnit = objects.OfType<Unit>().FirstOrDefault();
-
-        if (currentState is TargetSelectState targeting && targeting.IsCombat)
-        {
-            if (hoveredUnit is EnemyUnit hoveredEnemy && targeting.IsTarget(hoveredEnemy.GridPosition))
-                HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
-            else
-                HoverInfoController.Instance?.ShowUnit(targeting.Unit);
-            return;
-        }
-
-        if (ActionMenuController.Instance != null && ActionMenuController.Instance.isMenuOpen)
-        {
-            HoverInfoController.Instance?.ShowUnit(ActionMenuController.Instance.PendingUnit);
-            return;
-        }
-
-        if (currentMover != null)
-        {
-            PlayerUnit selected = currentMover.playerUnit;
-            if (hoveredUnit is EnemyUnit hoveredEnemy)
-            {
-                List<Node> reachable = PathfinderController.Instance.GetReachableNodes(
-                    currentMover.transform.position,
-                    selected.unitAttributes.movement,
-                    selected.unitAttributes.movementClass);
-                var (weapon, _) = AttackPlanner.BestAttack(selected, hoveredEnemy, reachable);
-                if (weapon != null)
-                {
-                    HoverInfoController.Instance?.ShowUnit(hoveredEnemy);
-                    return;
-                }
-            }
-            HoverInfoController.Instance?.ShowUnit(selected);
-            return;
-        }
-
-        foreach (PlayerUnit pu in FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None))
-        {
-            if (pu.mover != null && pu.mover.isMoving)
-            {
-                HoverInfoController.Instance?.ShowUnit(pu);
-                return;
-            }
-        }
-
-        if (hoveredUnit != null)
-        {
-            HoverInfoController.Instance?.ShowUnit(hoveredUnit);
-            return;
-        }
-        Node node = PathfinderController.Instance.GetNode(worldPosition);
-        if (node?.terrainType != null)
-        {
-            HoverInfoController.Instance?.ShowTerrain(node.terrainType);
-            return;
-        }
-        HoverInfoController.Instance?.Hide();
+        if (scroll > 0) currentState?.OnScroll(1);
+        else if (scroll < 0) currentState?.OnScroll(-1);
     }
 
     public void ReturnToIdle()

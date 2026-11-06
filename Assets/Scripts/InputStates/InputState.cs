@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 // One "mode" the player can be in (e.g. picking an attack target).
@@ -11,4 +12,24 @@ public abstract class InputState
     public virtual void Tick(Vector3Int hoveredCell){}
     public virtual void OnClick(Vector3Int cell) {}
     public virtual void OnRightClick() {}
+    public virtual void OnScroll(int direction) {}
+
+    // Shows the hover panel for whatever is at `cell`: the unit standing there, else the terrain, else nothing
+    protected static void ShowHoverInfoAt(Vector3Int cell)
+    {
+        Unit unit = MapManager.Instance.GetObjectsAt(cell).OfType<Unit>().FirstOrDefault();
+        if (unit != null)
+        {
+            HoverInfoController.Instance?.ShowUnit(unit);
+            return;
+        }
+
+        Node node = PathfinderController.Instance.GetNode(cell);
+        if (node?.terrainType != null)
+        {
+            HoverInfoController.Instance?.ShowTerrain(node.terrainType);
+            return;
+        }
+        HoverInfoController.Instance?.Hide();
+    }
 }
