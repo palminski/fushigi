@@ -81,8 +81,8 @@ public class UnitSelectedState : InputState
         
         if (playerGridPos == cell)
         {
+            // Waiting in place: this opens the action menu, which also leaves this state
             Mover.DeactivatePlayer();
-            inputController.ReturnToIdle();
             return;
         }
 

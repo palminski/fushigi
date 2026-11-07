@@ -102,11 +102,12 @@ public class InventoryMenu : MonoBehaviour
 
     public void Close()
     {
+        PlayerUnit unit = pendingUnit;
         menuPanel.SetActive(false);
         subMenuPanel.SetActive(false);
         pendingUnit = null;
         selectedItem = null;
-        ActionMenu.Instance.ReopenMenu();
+        InputController.Instance.OpenActionMenu(unit);
     }
 
     public void CloseAndEndTurn()
@@ -116,7 +117,7 @@ public class InventoryMenu : MonoBehaviour
         subMenuPanel.SetActive(false);
         pendingUnit = null;
         selectedItem = null;
-        ActionMenu.Instance.HideMenu();
+        InputController.Instance.ReturnToIdle();
         unit.SetInactive();
     }
 }

@@ -79,7 +79,7 @@ public class Mover : MonoBehaviour
             } 
             else if (playerUnit != null)
             {
-                ActionMenu.Instance.ShowMenu(playerUnit);
+                InputController.Instance.OpenActionMenu(playerUnit);
             }
         }
     }
@@ -88,7 +88,7 @@ public class Mover : MonoBehaviour
     {
         startWorldPosition = transform.position;
         CanUndoMove = true;
-        if (playerUnit) ActionMenu.Instance.ShowMenu(playerUnit);
+        if (playerUnit) InputController.Instance.OpenActionMenu(playerUnit);
     }
 
     public void CancelMove()

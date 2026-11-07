@@ -251,10 +251,8 @@ public class TradeMenu : MonoBehaviour
         initiatorSnapshot = null;
         partnerSnapshot = null;
 
-        if (itemsChanged)
-            ActionMenu.Instance.ReopenMenuLocked();
-        else
-            ActionMenu.Instance.ReopenMenu();
+        if (itemsChanged) unit.mover.LockMove();
+        InputController.Instance.OpenActionMenu(unit);
     }
 
     private void AutoEquip(Unit unit)

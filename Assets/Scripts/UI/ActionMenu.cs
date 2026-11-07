@@ -76,27 +76,6 @@ public class ActionMenu : MonoBehaviour
         capturableEnemies.Clear();
     }
 
-    public void CancelMenu()
-    {
-        if (!pendingUnit.mover.CanUndoMove) return;
-        PlayerUnit unit = pendingUnit;
-        HideMenu();
-        unit.mover.CancelMove();
-        InputController.Instance.ChangeState(new UnitSelectedState(unit.mover));
-    }
-
-    public void ReopenMenu()
-    {
-        if (pendingUnit != null) menuPanel.SetActive(true);
-    }
-
-    public void ReopenMenuLocked()
-    {
-        if (pendingUnit == null) return;
-        pendingUnit.mover.LockMove();
-        menuPanel.SetActive(true);
-    }
-
     public void OnTradeClicked()
     {
         FindAdjacentPlayers(pendingUnit);
@@ -121,13 +100,10 @@ public class ActionMenu : MonoBehaviour
     public void OnAttackClicked()
     {
         InputController.Instance.StartAttackTargetSelection(pendingUnit, attackableEnemies);
-        menuPanel.SetActive(false);
-        pendingUnit = null;
     }
     public void OnRescueClicked()
     {
         if (rescuableAllies.Count == 0) return;
-        menuPanel.SetActive(false);
         if (rescuableAllies.Count == 1)
         {
             CompleteRescue(pendingUnit, rescuableAllies[0]);
@@ -140,7 +116,6 @@ public class ActionMenu : MonoBehaviour
     public void OnTakeClicked()
     {
         if(takeableAllies.Count == 0) return;
-        menuPanel.SetActive(false);
         if (takeableAllies.Count == 1)
         {
             CompleteTake(pendingUnit, takeableAllies[0]);
@@ -154,23 +129,21 @@ public class ActionMenu : MonoBehaviour
     {
         if (capturableEnemies.Count == 0) return;
         InputController.Instance.StartCaptureTargetSelection(pendingUnit, capturableEnemies);
-        menuPanel.SetActive(false);
-        pendingUnit = null;
     }
     public void OnDropClicked()
     {
         if (pendingUnit.heldUnit == null) return;
         if (pendingUnit.heldUnit is PlayerUnit)
         {
-            menuPanel.SetActive(false);
             InputController.Instance.StartDropTileSelection(pendingUnit);
         }
         else if (pendingUnit.heldUnit is EnemyUnit)
         {
             //Maybe this should spend whole turn?
-            pendingUnit.ReleaseHeld();
-            RefreshUnitHoldButtons();
-            ReopenMenuLocked();
+            PlayerUnit unit = pendingUnit;
+            unit.ReleaseHeld();
+            unit.mover.LockMove();
+            InputController.Instance.OpenActionMenu(unit);
         }
     }
     public void OnHeldTradeClicked()
@@ -183,15 +156,15 @@ public class ActionMenu : MonoBehaviour
     public void OnWaitClicked()
     {
         PlayerUnit unit = pendingUnit;
-        HideMenu();
+        InputController.Instance.ReturnToIdle();
         unit.SetInactive();
     }
 
     public void CompleteRescue(PlayerUnit rescuer, PlayerUnit ally)
     {
         rescuer.PickUpUnit(ally);
-        RefreshUnitHoldButtons();
-        ReopenMenuLocked();
+        rescuer.mover.LockMove();
+        InputController.Instance.OpenActionMenu(rescuer);
     }
 
     public void CompleteTake(PlayerUnit rescuer, PlayerUnit ally)
@@ -201,14 +174,8 @@ public class ActionMenu : MonoBehaviour
         {
             rescuer.TakeUnitFromAlly(ally);
         }
-        RefreshUnitHoldButtons();
-        ReopenMenuLocked();
-    }
-
-    public void CompleteDrop()
-    {
-        RefreshUnitHoldButtons();
-        ReopenMenuLocked();
+        rescuer.mover.LockMove();
+        InputController.Instance.OpenActionMenu(rescuer);
     }
 
     private List<PlayerUnit> FindAdjacentPlayers(PlayerUnit unit)

@@ -93,21 +93,21 @@ public class InputController : MonoBehaviour
     {
         ChangeState(new TargetSelectState(TargetKind.Trade, unit, CellsOf(partners), OverlayColor.Green,
             onConfirm: cell => TradeMenu.Instance.Show(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenu.Instance.ReopenMenu()));
+            onCancel: () => OpenActionMenu(unit)));
     }
 
     public void StartRescueTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
     {
         ChangeState(new TargetSelectState(TargetKind.Rescue, unit, CellsOf(allies), OverlayColor.Green,
             onConfirm: cell => ActionMenu.Instance.CompleteRescue(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenu.Instance.ReopenMenu()));
+            onCancel: () => OpenActionMenu(unit)));
     }
 
     public void StartTakeTargetSelection(PlayerUnit unit, List<PlayerUnit> allies)
     {
         ChangeState(new TargetSelectState(TargetKind.Take, unit, CellsOf(allies), OverlayColor.Green,
             onConfirm: cell => ActionMenu.Instance.CompleteTake(unit, UnitAt<PlayerUnit>(cell)),
-            onCancel: () => ActionMenu.Instance.ReopenMenu()));
+            onCancel: () => OpenActionMenu(unit)));
     }
 
     public void StartDropTileSelection(PlayerUnit unit)
@@ -126,14 +126,21 @@ public class InputController : MonoBehaviour
             onConfirm: cell =>
             {
                 unit.DropUnit(cell);
-                ActionMenu.Instance.CompleteDrop();
+                unit.mover.LockMove();
+                OpenActionMenu(unit);
             },
-            onCancel: () => ActionMenu.Instance.ReopenMenu()));
+            onCancel: () => OpenActionMenu(unit)));
     }
 
-    // Undo the unit's move and let the player pick a new destination
-    private void ReturnToMovement(PlayerUnit unit)
+    // Undo the unit's move and let the player pick a new destination.
+    // If the move is locked (it already rescued, traded...), go back to its action menu instead.
+    public void ReturnToMovement(PlayerUnit unit)
     {
+        if (!unit.mover.CanUndoMove)
+        {
+            OpenActionMenu(unit);
+            return;
+        }
         unit.mover.CancelMove();
         ChangeState(new UnitSelectedState(unit.mover));
     }
@@ -164,14 +171,6 @@ public class InputController : MonoBehaviour
         
 
         Vector3Int cell = MapManager.Instance.WorldToGrid(worldPosition);
-
-        if(ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
-        {
-            //Unit clicked after moving treat as wait
-            if(MapManager.Instance.GetObjectsAt(cell).Contains(ActionMenu.Instance.PendingUnit)) ActionMenu.Instance.OnWaitClicked();
-            return;
-        }
-
         currentState.OnClick(cell);
     }
 
@@ -191,10 +190,6 @@ public class InputController : MonoBehaviour
         else if (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
         {
             InventoryMenu.Instance.Close();
-        }
-        else if (ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
-        {
-            ActionMenu.Instance.CancelMenu();
         }
         else
         {
@@ -253,6 +248,11 @@ public class InputController : MonoBehaviour
     {
         ChangeState(new IdleState());
     }
+
+    public void OpenActionMenu(PlayerUnit unit)
+    {
+        ChangeState(new ActionMenuState(unit));
+    }
     public void ToggleDangerZone(EnemyUnit enemy)
     {
         if (!toggledEnemies.Remove(enemy)) toggledEnemies.Add(enemy);
@@ -261,7 +261,6 @@ public class InputController : MonoBehaviour
     private bool IsMenuOpen()
     {
         return (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
-        || (ActionMenu.Instance != null && ActionMenu.Instance.isMenuOpen)
         || (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen);
     }
 }
