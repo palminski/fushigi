@@ -44,6 +44,19 @@ public class InputController : MonoBehaviour
         inputActions.Gameplay.Disable();
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+        Vector2 screenPosition = Mouse.current.position.ReadValue();
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
+
+        Vector3Int gridPosition = LevelMap.Instance.WorldToCell(worldPosition);
+
+        RefreshDangerZones();
+
+        currentState.Tick(gridPosition);
+    }
+
     // 
     // STATE MACHINE
     // 
@@ -92,7 +105,7 @@ public class InputController : MonoBehaviour
     public void StartTradePartnerSelection(PlayerUnit unit, List<PlayerUnit> partners)
     {
         ChangeState(new TargetSelectState(TargetKind.Trade, unit, CellsOf(partners), OverlayColor.Green,
-            onConfirm: cell => TradeMenu.Instance.Show(unit, UnitAt<PlayerUnit>(cell)),
+            onConfirm: cell => OpenTrade(unit, UnitAt<PlayerUnit>(cell)),
             onCancel: () => OpenActionMenu(unit)));
     }
 
@@ -166,51 +179,14 @@ public class InputController : MonoBehaviour
 
         if (GamePhaseManager.Instance.gamePhase == GamePhase.Enemy) return;
         if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
-        if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen) return;
-        
 
         Vector3Int cell = MapManager.Instance.WorldToGrid(worldPosition);
         currentState.OnClick(cell);
     }
 
-    // 
-    // BEHAVIOR TREE FOR RIGHT CLICKS
-    // 
     private void OnRightClick(InputAction.CallbackContext context)
     {
-        if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen)
-        {
-            TradeMenu.Instance.Close();
-        }
-        else
-        {
-            currentState.OnRightClick();
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        Vector2 screenPosition = Mouse.current.position.ReadValue();
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
-
-        Vector3Int gridPosition = LevelMap.Instance.WorldToCell(worldPosition);
-
-        RefreshDangerZones();
-
-        if(IsMenuOpen())
-        {
-            // The menus handle their own input; the hover panel shows whose menu it is
-            MapOverlay.Instance.HideReticle();
-            CombatForecastPanel.Instance?.Hide();
-            PlayerUnit menuUnit = ActionMenu.Instance != null ? ActionMenu.Instance.PendingUnit : null;
-            if (menuUnit != null) HoverInfoPanel.Instance?.ShowUnit(menuUnit);
-            else HoverInfoPanel.Instance?.Hide();
-        }
-        else
-        {
-            currentState.Tick(gridPosition);
-        }
+        currentState.OnRightClick();
     }
 
     private void RefreshDangerZones()
@@ -249,13 +225,14 @@ public class InputController : MonoBehaviour
     {
         ChangeState(new InventoryMenuState(unit));
     }
+
+    public void OpenTrade(PlayerUnit unit, Unit partner)
+    {
+        ChangeState(new TradeMenuState(unit, partner));
+    }
     public void ToggleDangerZone(EnemyUnit enemy)
     {
         if (!toggledEnemies.Remove(enemy)) toggledEnemies.Add(enemy);
         UnitStatIndicatorManager.Instance.SetHighlighted(enemy, toggledEnemies.Contains(enemy));
-    }
-    private bool IsMenuOpen()
-    {
-        return TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen;
     }
 }

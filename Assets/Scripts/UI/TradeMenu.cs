@@ -25,8 +25,6 @@ public class TradeMenu : MonoBehaviour
     private TradeItemRow selectedRow;
     private TradeItemRow dragSource;
 
-    public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
-
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -236,23 +234,22 @@ public class TradeMenu : MonoBehaviour
         selectedRow = null;
     }
 
-    public void Close()
+    public bool FinishTrade()
     {
         AutoEquip(initiator);
         AutoEquip(partner);
+        return !initiatorSnapshot.SetEquals(initiator.inventory.items) || !partnerSnapshot.SetEquals(partner.inventory.items);
+    }
 
-        PlayerUnit unit = initiator;
-        bool itemsChanged = !initiatorSnapshot.SetEquals(initiator.inventory.items)
-                         || !partnerSnapshot.SetEquals(partner.inventory.items);
-
+    public void Hide()
+    {
+        EndDragCleanup();
+        ClearSelection();
         menuPanel.SetActive(false);
         initiator = null;
         partner = null;
         initiatorSnapshot = null;
         partnerSnapshot = null;
-
-        if (itemsChanged) unit.mover.LockMove();
-        InputController.Instance.OpenActionMenu(unit);
     }
 
     private void AutoEquip(Unit unit)

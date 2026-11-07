@@ -24,8 +24,6 @@ public class ActionMenu : MonoBehaviour
     private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
     private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
     private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
-    public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
-    public PlayerUnit PendingUnit => pendingUnit;
 
     void Awake()
     {
@@ -78,17 +76,8 @@ public class ActionMenu : MonoBehaviour
 
     public void OnTradeClicked()
     {
-        FindAdjacentPlayers(pendingUnit);
         if (adjacentPlayers.Count == 0) return;
-        menuPanel.SetActive(false);
-        if (adjacentPlayers.Count == 1)
-        {
-            TradeMenu.Instance.Show(pendingUnit, adjacentPlayers[0]);
-        }
-        else
-        {
-            InputController.Instance.StartTradePartnerSelection(pendingUnit, adjacentPlayers);
-        }
+        InputController.Instance.StartTradePartnerSelection(pendingUnit, adjacentPlayers);
     }
 
     public void OnInventoryClicked()
@@ -148,8 +137,7 @@ public class ActionMenu : MonoBehaviour
     public void OnHeldTradeClicked()
     {
         if (pendingUnit.heldUnit == null) return;
-        menuPanel.SetActive(false);
-        TradeMenu.Instance.Show(pendingUnit, pendingUnit.heldUnit);
+        InputController.Instance.OpenTrade(pendingUnit, pendingUnit.heldUnit);
     }
 
     public void OnWaitClicked()

@@ -17,8 +17,6 @@ public class InventoryMenu : MonoBehaviour
 
     private PlayerUnit pendingUnit;
     private ItemInstance selectedItem;
-
-    public bool isMenuOpen => (menuPanel != null && menuPanel.activeSelf) || isSubMenuOpen;
     public bool isSubMenuOpen => subMenuPanel != null && subMenuPanel.activeSelf;
 
     void Awake()
