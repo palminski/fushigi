@@ -15,6 +15,15 @@ public class Mover : MonoBehaviour
     private EnemyUnit queuedAttackTarget;
     private WeaponInstance queuedAttackWeapon;
 
+    // False once the unit has done something this turn that can't be taken back (rescue, trade, drop...),
+    // so it can no longer be sent back to where it started
+    public bool CanUndoMove { get; private set; } = true;
+
+    public void LockMove()
+    {
+        CanUndoMove = false;
+    }
+
     void Awake()
     {
         playerUnit = GetComponent<PlayerUnit>();
@@ -25,6 +34,7 @@ public class Mover : MonoBehaviour
         if (!isMoving)
         {
             startWorldPosition = transform.position;
+            CanUndoMove = true;
             StartCoroutine(FollowPath(path, moveStat));
             return;
         }
@@ -77,6 +87,7 @@ public class Mover : MonoBehaviour
     public void DeactivatePlayer()
     {
         startWorldPosition = transform.position;
+        CanUndoMove = true;
         if (playerUnit) ActionMenu.Instance.ShowMenu(playerUnit);
     }
 

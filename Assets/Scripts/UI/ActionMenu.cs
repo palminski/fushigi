@@ -24,7 +24,6 @@ public class ActionMenu : MonoBehaviour
     private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
     private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
     private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
-    private bool canCancel = true;
     public bool isMenuOpen => menuPanel != null && menuPanel.activeSelf;
     public PlayerUnit PendingUnit => pendingUnit;
 
@@ -75,12 +74,11 @@ public class ActionMenu : MonoBehaviour
         adjacentPlayers.Clear();
         rescuableAllies.Clear();
         capturableEnemies.Clear();
-        canCancel = true;
     }
 
     public void CancelMenu()
     {
-        if (!canCancel) return;
+        if (!pendingUnit.mover.CanUndoMove) return;
         PlayerUnit unit = pendingUnit;
         HideMenu();
         unit.mover.CancelMove();
@@ -94,8 +92,9 @@ public class ActionMenu : MonoBehaviour
 
     public void ReopenMenuLocked()
     {
-        canCancel = false;
-        if (pendingUnit != null) menuPanel.SetActive(true);
+        if (pendingUnit == null) return;
+        pendingUnit.mover.LockMove();
+        menuPanel.SetActive(true);
     }
 
     public void OnTradeClicked()
