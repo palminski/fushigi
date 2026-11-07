@@ -100,24 +100,18 @@ public class InventoryMenu : MonoBehaviour
         menuPanel.SetActive(true);
     }
 
-    public void Close()
+    public void Hide()
     {
-        PlayerUnit unit = pendingUnit;
         menuPanel.SetActive(false);
         subMenuPanel.SetActive(false);
         pendingUnit = null;
         selectedItem = null;
-        InputController.Instance.OpenActionMenu(unit);
     }
 
     public void CloseAndEndTurn()
     {
         PlayerUnit unit = pendingUnit;
-        menuPanel.SetActive(false);
-        subMenuPanel.SetActive(false);
-        pendingUnit = null;
-        selectedItem = null;
-        InputController.Instance.ReturnToIdle();
+        InputController.Instance.ReturnToIdle(); // leaving InventoryMenuState hides this menu
         unit.SetInactive();
     }
 }

@@ -93,8 +93,7 @@ public class ActionMenu : MonoBehaviour
 
     public void OnInventoryClicked()
     {
-        menuPanel.SetActive(false);
-        InventoryMenu.Instance.Show(pendingUnit);
+        InputController.Instance.OpenInventory(pendingUnit);
     }
 
     public void OnAttackClicked()

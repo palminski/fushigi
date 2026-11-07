@@ -166,7 +166,6 @@ public class InputController : MonoBehaviour
 
         if (GamePhaseManager.Instance.gamePhase == GamePhase.Enemy) return;
         if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
-        if (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen) return;
         if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen) return;
         
 
@@ -182,14 +181,6 @@ public class InputController : MonoBehaviour
         if (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen)
         {
             TradeMenu.Instance.Close();
-        }
-        else if (InventoryMenu.Instance != null && InventoryMenu.Instance.isSubMenuOpen)
-        {
-            InventoryMenu.Instance.CloseSubMenu();
-        }
-        else if (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
-        {
-            InventoryMenu.Instance.Close();
         }
         else
         {
@@ -253,6 +244,11 @@ public class InputController : MonoBehaviour
     {
         ChangeState(new ActionMenuState(unit));
     }
+
+    public void OpenInventory(PlayerUnit unit)
+    {
+        ChangeState(new InventoryMenuState(unit));
+    }
     public void ToggleDangerZone(EnemyUnit enemy)
     {
         if (!toggledEnemies.Remove(enemy)) toggledEnemies.Add(enemy);
@@ -260,7 +256,6 @@ public class InputController : MonoBehaviour
     }
     private bool IsMenuOpen()
     {
-        return (InventoryMenu.Instance != null && InventoryMenu.Instance.isMenuOpen)
-        || (TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen);
+        return TradeMenu.Instance != null && TradeMenu.Instance.isMenuOpen;
     }
 }
