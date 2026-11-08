@@ -21,13 +21,14 @@ public class InputController : MonoBehaviour
         }
         Instance = this;
         inputActions = new GameInput();
+        ScreenManager.Instance.ScreenUp += OnScreenUp;
+        ScreenManager.Instance.ScreenGone += OnScreenGone;
     }
 
     void Start()
     {
         ReturnToIdle();
-        ScreenManager.Instance.ScreenUp += OnScreenUp;
-        ScreenManager.Instance.ScreenGone += OnScreenGone;
+        
     }
     void OnDestroy()
     {

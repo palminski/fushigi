@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(-100)]
 public class ScreenManager : MonoBehaviour
 {
     public static ScreenManager Instance {get; private set;}

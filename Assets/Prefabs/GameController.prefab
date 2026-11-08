@@ -4992,6 +4992,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gamePhase: 0
+  phaseDisplayScreen: {fileID: 4651322380395659842, guid: 2261a6103ac599227a7eebc2371d3113, type: 3}
 --- !u!114 &1704586706592846040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5079,6 +5080,8 @@ MonoBehaviour:
     color: {r: 1, g: 0, b: 0.011764706, a: 1}
     sortingOrder: 42
   heldEnemyColor: {r: 1, g: 0, b: 0, a: 1}
+  deathFadeSeconds: 0.35
+  carrySlideSeconds: 0.3
 --- !u!114 &8776042924790291260
 MonoBehaviour:
   m_ObjectHideFlags: 0

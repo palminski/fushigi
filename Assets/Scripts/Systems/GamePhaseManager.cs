@@ -6,12 +6,14 @@ public enum GamePhase
 {
     Player,
     Enemy,
+    Ally,
 }
 public class GamePhaseManager : MonoBehaviour
 {
     public static GamePhaseManager Instance { get; private set; }
 
     public GamePhase gamePhase = GamePhase.Player;
+    [SerializeField] private PhaseDisplayScreen phaseDisplayScreen;
 
     void Awake()
     {
@@ -25,7 +27,7 @@ public class GamePhaseManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        StartCoroutine(PresentGamePhaseBanner(gamePhase));
     }
 
     // Update is called once per frame
@@ -50,6 +52,7 @@ public class GamePhaseManager : MonoBehaviour
 
     private IEnumerator MoveEnemies()
     {
+        yield return PresentGamePhaseBanner(gamePhase);
         var enemyUnits = FindObjectsByType<EnemyUnit>(FindObjectsSortMode.None);
         foreach (EnemyUnit enemyUnit in enemyUnits)
         {
@@ -80,6 +83,7 @@ public class GamePhaseManager : MonoBehaviour
         else
         {
             gamePhase = GamePhase.Player;
+            StartCoroutine(PresentGamePhaseBanner(gamePhase));
         }
     }
 
@@ -97,5 +101,10 @@ public class GamePhaseManager : MonoBehaviour
         return true;
 
 
+    }
+
+    private IEnumerator PresentGamePhaseBanner(GamePhase phase)
+    {
+        yield return ScreenManager.Instance.OpenAndWait(phaseDisplayScreen, screen => screen.Show(phase));
     }
 }
