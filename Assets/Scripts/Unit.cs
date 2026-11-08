@@ -17,6 +17,7 @@ public abstract class Unit : MapObject
     public event System.Action HealthChanged;
     public event System.Action HeldUnitChanged;
     public event System.Action Died; // raised just before the unit is destroyed
+    public event System.Action<Unit> PickedUp; // raised on the unit being picked up (rescued or captured), with who picked it up
 
     protected virtual void Awake()
     {
@@ -53,6 +54,7 @@ public abstract class Unit : MapObject
         // A capture "kills" without dealing damage, so the capture animation left this unit's bar drained to 0.
         // Redraw it at its real health for whenever it's set down again.
         unit.HealthChanged?.Invoke();
+        unit.PickedUp?.Invoke(this);
         MapManager.Instance.RefreshMap();
         HeldUnitChanged?.Invoke();
 
