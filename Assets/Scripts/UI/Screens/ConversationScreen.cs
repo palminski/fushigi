@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ConversationScreen : OverlayScreen
 {
@@ -18,10 +19,16 @@ public class ConversationScreen : OverlayScreen
     private Conversation conversation;
     private int lineIndex;
 
+    // Who is currently standing on each side - lines only change a side when they say so
+    private Speaker leftSpeaker;
+    private Speaker rightSpeaker;
+
     public void Play(Conversation conversation)
     {
         this.conversation = conversation;
         lineIndex = 0;
+        leftSpeaker = null;
+        rightSpeaker = null;
         leftPortrait.enabled = false;
         rightPortrait.enabled = false;
 
@@ -35,24 +42,30 @@ public class ConversationScreen : OverlayScreen
 
     private void ShowLine(DialogueLine line)
     {
-        bool hasSpeaker = line.speaker != null;
+        leftSpeaker = ApplySlot(leftPortrait, line.left, leftSpeaker);
+        rightSpeaker = ApplySlot(rightPortrait, line.right, rightSpeaker);
 
-        namePlate.SetActive(hasSpeaker);
-        if (hasSpeaker)
-        {
-            nameText.text = line.speaker.displayName;
+        // The name plate names whoever is lit: one name, "A & B" if both are, hidden for narration
+        List<string> names = new List<string>();
+        if (line.left.IsLit) names.Add(leftSpeaker.displayName);
+        if (line.right.IsLit) names.Add(rightSpeaker.displayName);
+        namePlate.SetActive(names.Count > 0);
+        nameText.text = string.Join(" & ", names);
 
-            Image portrait = line.side == PortraitSide.Left ? leftPortrait : rightPortrait;
-            portrait.sprite = line.speaker.portrait;
-            portrait.enabled = line.speaker.portrait != null;
-        }
         lineText.text = line.text;
-
-        SetSpeaking(leftPortrait, hasSpeaker && line.side == PortraitSide.Left);
-        SetSpeaking(rightPortrait, hasSpeaker && line.side == PortraitSide.Right);
-
         typingCoroutine = StartCoroutine(TypeLine());
+    }
 
+    // Updates one side from the line's slot and returns who is standing there afterwards
+    private Speaker ApplySlot(Image portrait, PortraitSlot slot, Speaker current)
+    {
+        if (slot.clear) current = null;
+        else if (slot.speaker != null) current = slot.speaker;
+
+        portrait.sprite = current != null ? current.portrait : null;
+        portrait.enabled = current != null && current.portrait != null;
+        SetSpeaking(portrait, slot.IsLit);
+        return current;
     }
 
     private void SetSpeaking(Image portrait, bool isSpeaking)

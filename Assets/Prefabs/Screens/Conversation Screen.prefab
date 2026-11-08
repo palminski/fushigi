@@ -57,6 +57,7 @@ MonoBehaviour:
   nameText: {fileID: 6693385281507103491}
   lineText: {fileID: 842043537574875179}
   listeningTint: {r: 0.7, g: 0.7, b: 0.7, a: 1}
+  charactersPerSecond: 67
 --- !u!1 &1458063497706015165
 GameObject:
   m_ObjectHideFlags: 0

@@ -13336,6 +13336,7 @@ MonoBehaviour:
   <TerrainLayers>k__BackingField:
   - tilemap: {fileID: 1796223357}
     terrainType: {fileID: 11400000, guid: 54140a98f09f17018a54f8c70adc8199, type: 2}
+  <OpeningConversation>k__BackingField: {fileID: 11400000, guid: cf1870acd11c6251dac81b540fede860, type: 2}
 --- !u!1 &1005698021
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,12 +13,55 @@ MonoBehaviour:
   m_Name: Demo Conversation
   m_EditorClassIdentifier: Assembly-CSharp::Conversation
   lines:
-  - speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
-    side: 0
+  - left:
+      speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
+      darken: 0
+      clear: 0
+    right:
+      speaker: {fileID: 0}
+      darken: 0
+      clear: 0
     text: Hello World.
-  - speaker: {fileID: 11400000, guid: 0f072bacd86e910a392998470579a7c3, type: 2}
-    side: 1
+  - left:
+      speaker: {fileID: 0}
+      darken: 0
+      clear: 0
+    right:
+      speaker: {fileID: 11400000, guid: 0f072bacd86e910a392998470579a7c3, type: 2}
+      darken: 0
+      clear: 0
     text: This is a demo of dialogue done FE style!
-  - speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
-    side: 0
-    text: Pretty neat! Okay, now let's fight!
+  - left:
+      speaker: {fileID: 0}
+      darken: 0
+      clear: 0
+    right:
+      speaker: {fileID: 11400000, guid: 0f072bacd86e910a392998470579a7c3, type: 2}
+      darken: 0
+      clear: 0
+    text: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+      eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+      in culpa qui officia deserunt mollit anim id est laborum.
+  - left:
+      speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
+      darken: 0
+      clear: 0
+    right:
+      speaker: {fileID: 0}
+      darken: 0
+      clear: 0
+    text: Pretty neat! I bet someone like Gabe could make pretty good use of a feature
+      like this to craft engaging scenes!  Especially because you have a pretty solid
+      amount of control over who is displayed and who is highlighted!
+  - left:
+      speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
+      darken: 0
+      clear: 0
+    right:
+      speaker: {fileID: 0}
+      darken: 0
+      clear: 0
+    text: Anayways, enough pre-fight banter. Let's fight!
