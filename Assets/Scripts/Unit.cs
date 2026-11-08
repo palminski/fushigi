@@ -18,6 +18,8 @@ public abstract class Unit : MapObject
     public event System.Action HeldUnitChanged;
     public event System.Action Died; // raised just before the unit is destroyed
     public event System.Action<Unit> PickedUp; // raised on the unit being picked up (rescued or captured), with who picked it up
+    public event System.Action<Unit> Dropped;  // raised on a carried unit when it's set down, with who carried it
+    public event System.Action<Unit> Released; // raised on a captive just before it's let go (and removed), with who held it
 
     protected virtual void Awake()
     {
@@ -78,6 +80,7 @@ public abstract class Unit : MapObject
         if(dropped is PlayerUnit droppedPlayer) droppedPlayer.SetInactive();
         dropped.gameObject.SetActive(true);
         dropped.transform.position = LevelMap.Instance.CellCenter(gridPosition);
+        dropped.Dropped?.Invoke(this);
         MapManager.Instance.RefreshMap();
         HeldUnitChanged?.Invoke();
 
@@ -92,6 +95,7 @@ public abstract class Unit : MapObject
 
     public void ReleaseHeld()
     {
+        heldUnit.Released?.Invoke(this);
         Destroy(heldUnit.gameObject);
         heldUnit = null;
         HeldUnitChanged?.Invoke();

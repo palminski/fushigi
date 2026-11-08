@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 public class UnitStatIndicatorManager : MonoBehaviour
 {
     public static UnitStatIndicatorManager Instance {get; private set; }
@@ -20,7 +21,7 @@ public class UnitStatIndicatorManager : MonoBehaviour
     [SerializeField] private IndicatorParams unitHighlight;
     [SerializeField] private Color heldEnemyColor = Color.red;
     [SerializeField] private float deathFadeSeconds = 0.35f;
-    [SerializeField] private float pickUpSeconds = 0.3f; // a rescued/captured unit slides onto its carrier while fading
+    [SerializeField] private float carrySlideSeconds = 0.3f; // picking up, dropping and releasing units slide them while fading
 
     private class UnitIndicators
     {
@@ -69,14 +70,30 @@ public class UnitStatIndicatorManager : MonoBehaviour
         unit.HealthChanged += () => DrawHealth(unit);
         unit.HeldUnitChanged += () => DrawHeldUnit(unit);
         unit.Died += () => OnUnitDied(unit);
-        unit.PickedUp += carrier => FadingSprite.Spawn(unit, pickUpSeconds, carrier.transform.position);
+        unit.PickedUp += carrier => FadingSprite.FadeOut(unit, carrySlideSeconds, unit.transform.position, carrier.transform.position);
+        unit.Dropped += carrier => FadingSprite.FadeIn(unit, carrySlideSeconds, carrier.transform.position);
+        unit.Released += carrier => FadingSprite.FadeOut(unit, carrySlideSeconds, carrier.transform.position, ReleaseDestination(carrier));
     }
 
     // Leave a fading copy of the unit behind, and forget its indicators (they're destroyed along with the unit)
     private void OnUnitDied(Unit unit)
     {
-        FadingSprite.Spawn(unit, deathFadeSeconds);
+        FadingSprite.FadeOut(unit, deathFadeSeconds);
         indicators.Remove(unit);
+    }
+
+    // Where a released captive walks off to: an empty neighbouring tile if there is one (right first), otherwise the tile to the right
+    private static Vector3 ReleaseDestination(Unit carrier)
+    {
+        Vector3Int position = carrier.GridPosition;
+        Vector3Int[] neighbours = { position + Vector3Int.right, position + Vector3Int.up, position + Vector3Int.down, position + Vector3Int.left };
+        foreach (Vector3Int cell in neighbours)
+        {
+            bool occupied = MapManager.Instance.GetObjectsAt(cell).Any(o => o is Unit);
+            bool walkable = Pathfinder.Instance.GetNode(cell)?.walkable ?? false;
+            if (!occupied && walkable) return LevelMap.Instance.CellCenter(cell);
+        }
+        return LevelMap.Instance.CellCenter(position + Vector3Int.right);
     }
 
     private void DrawHealth(Unit unit)
