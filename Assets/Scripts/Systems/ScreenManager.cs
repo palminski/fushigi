@@ -12,6 +12,20 @@ public class ScreenManager : MonoBehaviour
         Instance = this;
     }
 
-    public void Open() => IsBlocking = true;
-    public void Close() => IsBlocking = false;
+    public event System.Action ScreenUp;
+    public event System.Action ScreenGone;
+
+    public void Open()
+    {
+        if(IsBlocking) return;
+        IsBlocking = true;
+        ScreenUp?.Invoke();
+    }
+
+    public void Close()
+    {
+        if(!IsBlocking) return;
+        IsBlocking = false;
+        ScreenGone?.Invoke();
+    }
 }

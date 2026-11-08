@@ -13,6 +13,8 @@ public abstract class InputState
     public virtual void OnClick(Vector3Int cell) {}
     public virtual void OnRightClick() {}
     public virtual void OnScroll(int direction) {}
+    public virtual void Pause() {}
+    public virtual void Resume() {}
 
     // Shows the hover panel for whatever is at `cell`: the unit standing there, else the terrain, else nothing
     protected static void ShowHoverInfoAt(Vector3Int cell)

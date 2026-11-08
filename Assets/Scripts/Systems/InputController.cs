@@ -26,6 +26,14 @@ public class InputController : MonoBehaviour
     void Start()
     {
         ReturnToIdle();
+        ScreenManager.Instance.ScreenUp += OnScreenUp;
+        ScreenManager.Instance.ScreenGone += OnScreenGone;
+    }
+    void OnDestroy()
+    {
+        if(ScreenManager.Instance == null) return;
+        ScreenManager.Instance.ScreenUp -= OnScreenUp;
+        ScreenManager.Instance.ScreenGone -= OnScreenGone;
     }
 
     void OnEnable()
@@ -53,6 +61,8 @@ public class InputController : MonoBehaviour
         Vector3Int gridPosition = LevelMap.Instance.WorldToCell(worldPosition);
 
         RefreshDangerZones();
+
+        if(IsMapPaused) return;
 
         currentState.Tick(gridPosition);
     }
@@ -178,7 +188,7 @@ public class InputController : MonoBehaviour
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
 
         if (GamePhaseManager.Instance.gamePhase == GamePhase.Enemy) return;
-        if (ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking) return;
+        if (IsMapPaused) return;
 
         Vector3Int cell = MapManager.Instance.WorldToGrid(worldPosition);
         currentState.OnClick(cell);
@@ -186,6 +196,7 @@ public class InputController : MonoBehaviour
 
     private void OnRightClick(InputAction.CallbackContext context)
     {
+        if (IsMapPaused) return;
         currentState.OnRightClick();
     }
 
@@ -206,6 +217,7 @@ public class InputController : MonoBehaviour
 
     private void OnScroll(InputAction.CallbackContext context)
     {
+        if (IsMapPaused) return;
         float scroll = context.ReadValue<float>();
         if (scroll > 0) currentState?.OnScroll(1);
         else if (scroll < 0) currentState?.OnScroll(-1);
@@ -214,6 +226,21 @@ public class InputController : MonoBehaviour
     public void ReturnToIdle()
     {
         ChangeState(new IdleState());
+    }
+
+    private bool IsMapPaused => ScreenManager.Instance != null && ScreenManager.Instance.IsBlocking;
+
+    private void OnScreenUp()
+    {
+        MapOverlay.Instance.HideReticle();
+        HoverInfoPanel.Instance?.Hide();
+        CombatForecastPanel.Instance?.Hide();
+        currentState.Pause();
+    }
+
+    private void OnScreenGone()
+    {
+        currentState.Resume();
     }
 
     public void OpenActionMenu(PlayerUnit unit)

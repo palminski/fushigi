@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class IdleState : InputState
 {
+    public override void Pause()
+    {
+        MapOverlay.Instance.ClearSelection();
+    }
     public override void Tick(Vector3Int hoveredCell)
     {
         MapOverlay.Instance.ShowReticle(hoveredCell);
