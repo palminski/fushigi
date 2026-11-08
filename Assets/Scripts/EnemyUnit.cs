@@ -106,7 +106,7 @@ public class EnemyUnit : Unit
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.Resolve(this, target, weapon);
-        yield return CombatPresenter.Instance.Present(result);
+        yield return CombatPresenter.Instance.Present(this,target,result);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
         if (result.totalDamageToDefender > 0 && target != null)
             target.TakeDamage(result.totalDamageToDefender);

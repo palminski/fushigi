@@ -32,12 +32,13 @@ public struct CombatEvent
     public bool hitWasPlayer;
 
     public bool didHit;
+    public bool wasCritical; // nothing rolls crits yet, so this is always false - the map animation already reacts to it
 
-    public CombatEvent(string hitter, string hit, int dmg, int hpBefore, int hpAfter, bool wasPlayer = false, bool didHit = true)
+    public CombatEvent(string hitter, string hit, int dmg, int hpBefore, int hpAfter, bool wasPlayer = false, bool didHit = true, bool wasCritical = false)
     {
         hitterName = hitter; hitName = hit; damage = dmg;
         hitHpBefore = hpBefore; hitHpAfter = hpAfter;
-        hitWasPlayer = wasPlayer; this.didHit = didHit;
+        hitWasPlayer = wasPlayer; this.didHit = didHit; this.wasCritical = wasCritical;
     }
 }
 

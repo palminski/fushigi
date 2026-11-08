@@ -5092,6 +5092,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatPresenter
   readoutScreenPrefab: {fileID: 2723464138070263610, guid: 33cf5a289ed1f9922aaa81c86e80c7f2, type: 3}
+  mapAnimationPrefab: {fileID: 4651499243766580318, guid: a547ea36a490f79788bae46e2b4d8148, type: 3}
+  animationMode: 1
 --- !u!1 &6244706377311829881
 GameObject:
   m_ObjectHideFlags: 0

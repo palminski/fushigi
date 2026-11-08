@@ -48,6 +48,9 @@ public abstract class Unit : MapObject
         heldUnit = unit;
         hasPickedUpUnit = true;
         unit.gameObject.SetActive(false);
+        // A capture "kills" without dealing damage, so the capture animation left this unit's bar drained to 0.
+        // Redraw it at its real health for whenever it's set down again.
+        unit.HealthChanged?.Invoke();
         MapManager.Instance.RefreshMap();
         HeldUnitChanged?.Invoke();
 
@@ -95,7 +98,7 @@ public abstract class Unit : MapObject
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.ResolveCapture(this, target, weapon);
-        yield return CombatPresenter.Instance.Present(result);
+        yield return CombatPresenter.Instance.Present(this,target,result);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
 
         if (result.defenderDied && target != null)

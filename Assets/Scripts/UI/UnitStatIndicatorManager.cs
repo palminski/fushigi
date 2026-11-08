@@ -70,11 +70,20 @@ public class UnitStatIndicatorManager : MonoBehaviour
 
     private void DrawHealth(Unit unit)
     {
-        UnitAttributes attributes = unit.unitAttributes;
-        float healthPercent = attributes.health > 0 ? (float)attributes.currentHealth / attributes.health : 0f;
+        ShowHealth(unit, unit.unitAttributes.currentHealth);
+    }
+
+    // Draws the bar at `health` instead of the unit's real health. Combat animations use this to drain the bar
+    // as hits land, since the real damage is only applied after the animation; the next HealthChanged redraws it for real.
+    public void ShowHealth(Unit unit, float health)
+    {
+        if (!indicators.TryGetValue(unit, out UnitIndicators unitIndicators)) return;
+
+        int maxHealth = unit.unitAttributes.health;
+        float healthPercent = maxHealth > 0 ? health / maxHealth : 0f;
         healthPercent = Mathf.Clamp01(healthPercent);
 
-        Transform bar = indicators[unit].healthBar.transform;
+        Transform bar = unitIndicators.healthBar.transform;
         bar.localScale = new Vector3(healthBar.size.x * healthPercent, healthBar.size.y, 1f);
     }
 
