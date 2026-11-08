@@ -4954,6 +4954,7 @@ GameObject:
   - component: {fileID: 1101575992203273615}
   - component: {fileID: 2287920394734052049}
   - component: {fileID: 8776042924790291260}
+  - component: {fileID: 5208394169454245461}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -5097,6 +5098,19 @@ MonoBehaviour:
   readoutScreenPrefab: {fileID: 2723464138070263610, guid: 33cf5a289ed1f9922aaa81c86e80c7f2, type: 3}
   mapAnimationPrefab: {fileID: 4651499243766580318, guid: a547ea36a490f79788bae46e2b4d8148, type: 3}
   animationMode: 1
+--- !u!114 &5208394169454245461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5598356921465743733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff4daea9b2f47ec5b83e9057f8ea759c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
+  conversationScreenPrefab: {fileID: 8475253811667541581, guid: ada71b9ee9a8ba43192761bbf0d2c330, type: 3}
 --- !u!1 &6244706377311829881
 GameObject:
   m_ObjectHideFlags: 0

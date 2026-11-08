@@ -21,6 +21,7 @@ public class LevelMap : MonoBehaviour
 
     // Checked in order; the first layer with a tile at a cell decides that cell's terrain
     [field: SerializeField] public List<TerrainLayer> TerrainLayers { get; private set; } = new List<TerrainLayer>();
+    [field: SerializeField] public Conversation OpeningConversation {get; private set;}
 
     void Awake()
     {

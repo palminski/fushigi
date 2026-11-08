@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d42c3fa52ead76af7b61e984a7839293, type: 3}
+  m_Name: Demo Conversation
+  m_EditorClassIdentifier: Assembly-CSharp::Conversation
+  lines:
+  - speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
+    side: 0
+    text: Hello World.
+  - speaker: {fileID: 11400000, guid: 0f072bacd86e910a392998470579a7c3, type: 2}
+    side: 1
+    text: This is a demo of dialogue done FE style!
+  - speaker: {fileID: 11400000, guid: 7d947014cda2d1dd1b1bfcb3741b2784, type: 2}
+    side: 0
+    text: Pretty neat! Okay, now let's fight!

@@ -27,7 +27,8 @@ public class GamePhaseManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(PresentGamePhaseBanner(gamePhase));
+
+        StartCoroutine(BeginLevel());
     }
 
     // Update is called once per frame
@@ -101,6 +102,12 @@ public class GamePhaseManager : MonoBehaviour
         return true;
 
 
+    }
+
+    private IEnumerator BeginLevel()
+    {
+        yield return DialogueManager.Instance.PlayConversation(LevelMap.Instance.OpeningConversation);
+        yield return PresentGamePhaseBanner(gamePhase);
     }
 
     private IEnumerator PresentGamePhaseBanner(GamePhase phase)
