@@ -16,6 +16,7 @@ public abstract class Unit : MapObject
 
     public event System.Action HealthChanged;
     public event System.Action HeldUnitChanged;
+    public event System.Action Died; // raised just before the unit is destroyed
 
     protected virtual void Awake()
     {
@@ -33,6 +34,7 @@ public abstract class Unit : MapObject
 
         if (unitAttributes.currentHealth <= 0)
         {
+            Died?.Invoke();
             Destroy(gameObject);
         }
     }

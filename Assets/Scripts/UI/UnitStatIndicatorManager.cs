@@ -19,6 +19,7 @@ public class UnitStatIndicatorManager : MonoBehaviour
     [SerializeField] private IndicatorParams heldUnitMarker;
     [SerializeField] private IndicatorParams unitHighlight;
     [SerializeField] private Color heldEnemyColor = Color.red;
+    [SerializeField] private float deathFadeSeconds = 0.6f;
 
     private class UnitIndicators
     {
@@ -66,6 +67,14 @@ public class UnitStatIndicatorManager : MonoBehaviour
 
         unit.HealthChanged += () => DrawHealth(unit);
         unit.HeldUnitChanged += () => DrawHeldUnit(unit);
+        unit.Died += () => OnUnitDied(unit);
+    }
+
+    // Leave a fading copy of the unit behind, and forget its indicators (they're destroyed along with the unit)
+    private void OnUnitDied(Unit unit)
+    {
+        DeathFade.Spawn(unit, deathFadeSeconds);
+        indicators.Remove(unit);
     }
 
     private void DrawHealth(Unit unit)
