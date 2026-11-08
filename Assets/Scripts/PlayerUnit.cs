@@ -43,8 +43,7 @@ public class PlayerUnit : Unit
     {
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.Resolve(this, target, weapon);
-        CombatScreen.Instance.Show(result);
-        yield return new WaitUntil(() => !ScreenManager.Instance.IsBlocking);
+        yield return CombatPresenter.Instance.Present(result);
         WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
         if (result.totalDamageToDefender > 0 && target != null)
             target.TakeDamage(result.totalDamageToDefender);
