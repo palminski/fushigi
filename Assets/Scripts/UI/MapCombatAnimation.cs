@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 // Plays a fight on the map itself (units lunge, flash, show damage...). It's an overlay with no visuals of its own:
@@ -20,6 +22,20 @@ public class MapCombatAnimation : OverlayScreen
     [SerializeField] private float critShakeStrength = 0.08f; // in tiles
     [SerializeField] private float critSeconds = 0.35f;
     [SerializeField] private int critFlashes = 3;
+
+    [Header("Damage numbers")]
+    [SerializeField] private TMP_FontAsset popupFont; // leave empty to use TextMeshPro's default font
+    [SerializeField] private float popupFontSize = 4f;
+    [SerializeField] private Color damageColor = Color.white;
+    [SerializeField] private Color critColor = new Color(1f, 0.85f, 0.2f);
+    [SerializeField] private Color missColor = new Color(0.75f, 0.75f, 0.75f);
+    [SerializeField] private float critSizeMultiplier = 1.4f;
+    [SerializeField] private Vector2 popupOffset = new Vector2(0f, 0.4f); // from the unit's centre, in tiles
+    [SerializeField] private float popupRise = 0.5f;
+    [SerializeField] private float popupSeconds = 0.7f;
+    [SerializeField] private int popupSortingOrder = 100; // above units and their health bars
+
+    private readonly List<GameObject> popups = new List<GameObject>();
 
     private Unit attacker;
     private Unit defender;
@@ -50,6 +66,9 @@ public class MapCombatAnimation : OverlayScreen
             Unit target = striker == attacker ? defender : attacker;
             yield return PlayHit(striker, target, combatEvent);
         }
+
+        // Let the last damage number finish fading before the screen closes (and clears them up)
+        while (popups.Count > 0 && !skipping) yield return null;
         Close();
     }
 
@@ -64,10 +83,13 @@ public class MapCombatAnimation : OverlayScreen
 
         if (!combatEvent.didHit)
         {
-            // Step 4: "Miss" popup
+            ShowPopup(target, "Miss", missColor, 1f);
         }
         else
         {
+            if (combatEvent.wasCritical) ShowPopup(target, combatEvent.damage + "!", critColor, critSizeMultiplier);
+            else ShowPopup(target, combatEvent.damage.ToString(), damageColor, 1f);
+
             // The bar drains while the target reacts: start it alongside, then wait for both to finish
             Coroutine drain = StartCoroutine(DrainHealth(target, combatEvent.hitHpBefore, combatEvent.hitHpAfter));
             if (combatEvent.wasCritical) yield return PlayCriticalHit(target);
@@ -117,6 +139,52 @@ public class MapCombatAnimation : OverlayScreen
         sprite.color = originalColor * tint;
         yield return Wait(seconds);
         sprite.color = originalColor;
+    }
+
+    // Floating text above `unit` that rises and fades on its own, without holding up the fight
+    private void ShowPopup(Unit unit, string text, Color color, float sizeMultiplier)
+    {
+        if (skipping) return;
+
+        GameObject popup = new GameObject("Combat Popup");
+        popup.transform.position = unit.transform.position + (Vector3)popupOffset;
+
+        TextMeshPro label = popup.AddComponent<TextMeshPro>();
+        if (popupFont != null) label.font = popupFont;
+        label.text = text;
+        label.color = color;
+        label.fontSize = popupFontSize * sizeMultiplier;
+        label.alignment = TextAlignmentOptions.Center;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.sortingOrder = popupSortingOrder;
+
+        popups.Add(popup);
+        StartCoroutine(FloatAndFade(popup, label));
+    }
+
+    private IEnumerator FloatAndFade(GameObject popup, TextMeshPro label)
+    {
+        Vector3 start = popup.transform.position;
+        Color color = label.color;
+        for (float t = 0; t < popupSeconds && !skipping; t += Time.deltaTime)
+        {
+            float progress = t / popupSeconds;
+            popup.transform.position = start + Vector3.up * (popupRise * progress);
+            color.a = 1f - progress * progress; // stays mostly solid, then fades quickly at the end
+            label.color = color;
+            yield return null;
+        }
+        popups.Remove(popup);
+        Destroy(popup);
+    }
+
+    // Popups float on their own coroutines, which stop when this screen is destroyed - clear up any still showing
+    void OnDestroy()
+    {
+        foreach (GameObject popup in popups)
+        {
+            if (popup != null) Destroy(popup);
+        }
     }
 
     // Slides the unit's health bar from `from` HP down to `to` HP, always finishing exactly at `to` (instantly when skipping)
