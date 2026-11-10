@@ -33654,6 +33654,14 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 706148483571779369, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: testTopicDialogue
+      value: 
+      objectReference: {fileID: 11400000, guid: 25f67694c19960c4faa13f6ac8162777, type: 2}
+    - target: {fileID: 706148483571779369, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: testTopicDialogueInitiator
+      value: 
+      objectReference: {fileID: 1557982982}
     - target: {fileID: 1972032056487352804, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
