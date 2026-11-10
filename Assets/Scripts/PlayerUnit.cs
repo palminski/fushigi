@@ -1,7 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 public class PlayerUnit : Unit
 {
+    // Topics only this unit can ask NPCs about (on top of the ones everyone remembers). Moves to a unit definition later.
+    public List<Topic> personalTopics = new List<Topic>();
+
     // Update is called once per frame
     void Update()
     {

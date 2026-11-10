@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a8c7873fb18095e8172d68d86b1181, type: 3}
+  m_Name: Test NPC
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogue
+  npc: {fileID: 11400000, guid: 0f072bacd86e910a392998470579a7c3, type: 2}
+  greeting: Hello! This is a test of the Morrowind style dialogue system
+  defaultTopics:
+  - topic: {fileID: 11400000, guid: 24ee47524ecac37e482070852b9792be, type: 2}
+    alias: 
+    response: Yup! This is our village! Welcome! Please don't look in the cellar...
+    unlocks:
+    - topic: {fileID: 11400000, guid: f11ba426bd10c0d649c1a2d44b8de345, type: 2}
+      scope: 2
+  - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
+    alias: The celler
+    response: 'What? There is nothing down there, Surely!
+
+
+      Well, if you simply
+      must know, the mayor''s son hid some secret down there.'
+    unlocks:
+    - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
+      scope: 2
+  unlockableTopics:
+  - topic: {fileID: 11400000, guid: f11ba426bd10c0d649c1a2d44b8de345, type: 2}
+    alias: The Loop
+    response: I am not sure I know what you mean. Like string?
+    unlocks: []
+  - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
+    alias: A Secret
+    response: You want to know a secret? Sure, I hear that you need to buy lots of
+      keys to beat the game!
+    unlocks: []

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,9 @@ using UnityEngine.SceneManagement;
 // Reads the keyboard directly rather than through GameInput, since these aren't part of the game's controls.
 public class DebugControls : MonoBehaviour
 {
+
+    [SerializeField] private NpcDialogue testTopicDialogue;
+    [SerializeField] private PlayerUnit testTopicDialogueInitiator;
     void Update()
     {
         Keyboard keyboard = Keyboard.current;
@@ -13,6 +17,15 @@ public class DebugControls : MonoBehaviour
 
         if (keyboard.escapeKey.wasPressedThisFrame) Quit();
         if (keyboard.rKey.wasPressedThisFrame) RestartScene();
+        if (keyboard.f9Key.wasPressedThisFrame)
+        {
+            GameSaveManager.NukeSaveData();
+            RestartScene();
+        }
+        if (keyboard.tKey.wasPressedThisFrame && testTopicDialogue != null && !ScreenManager.Instance.IsBlocking)
+        {
+            StartCoroutine(DialogueManager.Instance.StartTopicDialogue(testTopicDialogue, testTopicDialogueInitiator));
+        }
     }
 
     private void Quit()

@@ -5112,6 +5112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
   conversationScreenPrefab: {fileID: 8475253811667541581, guid: ada71b9ee9a8ba43192761bbf0d2c330, type: 3}
+  topicDialogueScreenPrefab: {fileID: 8897011334769847217, guid: 0764f755d941e11f78fad249a39bab16, type: 3}
 --- !u!114 &706148483571779369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5124,6 +5125,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 811e9ae1fa6ad362bb6a81953574517b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugControls
+  testTopicDialogue: {fileID: 0}
+  testTopicDialogueInitiator: {fileID: 0}
 --- !u!1 &6244706377311829881
 GameObject:
   m_ObjectHideFlags: 0
