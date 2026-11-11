@@ -11,8 +11,8 @@ public class ActionMenu : MonoBehaviour
     [SerializeField] private Button attackButton;
     [SerializeField] private Button inventoryButton;
     [SerializeField] private Button tradeButton;
+    [SerializeField] private Button talkButton;
     [SerializeField] private Button waitButton;
-
     [SerializeField] private Button rescueButton;
     [SerializeField] private Button captureButton;
     [SerializeField] private Button dropButton;
@@ -24,6 +24,7 @@ public class ActionMenu : MonoBehaviour
     private List<PlayerUnit> rescuableAllies = new List<PlayerUnit>();
     private List<PlayerUnit> takeableAllies = new List<PlayerUnit>();
     private List<EnemyUnit> capturableEnemies = new List<EnemyUnit>();
+    private List<MapObject> talkableMapObjects = new List<MapObject>();
 
     void Awake()
     {
@@ -41,12 +42,16 @@ public class ActionMenu : MonoBehaviour
         pendingUnit = movedUnit;
         attackableEnemies = FindAttackableEnemies(movedUnit);
         adjacentPlayers = FindAdjacentPlayers(movedUnit);
+        talkableMapObjects = FindTalkableMapObject(movedUnit);
+
         Vector3 screenPostion = Camera.main.WorldToScreenPoint(movedUnit.transform.position);
         menuPanel.GetComponent<RectTransform>().position = screenPostion + new Vector3(35f, 0f, 0f);
 
         attackButton.gameObject.SetActive(attackableEnemies.Count > 0);
         inventoryButton.gameObject.SetActive(movedUnit.inventory.items.Count > 0);
         tradeButton.gameObject.SetActive(adjacentPlayers.Count > 0);
+        talkButton.gameObject.SetActive(talkableMapObjects.Count > 0);
+
         RefreshUnitHoldButtons();
         menuPanel.SetActive(true);
     }
@@ -103,7 +108,7 @@ public class ActionMenu : MonoBehaviour
     }
     public void OnTakeClicked()
     {
-        if(takeableAllies.Count == 0) return;
+        if (takeableAllies.Count == 0) return;
         if (takeableAllies.Count == 1)
         {
             CompleteTake(pendingUnit, takeableAllies[0]);
@@ -140,6 +145,11 @@ public class ActionMenu : MonoBehaviour
         InputController.Instance.OpenTrade(pendingUnit, pendingUnit.heldUnit);
     }
 
+    public void OnTalkClicked()
+    {
+        InputController.Instance.StartTalkTargetSelection(pendingUnit, talkableMapObjects);
+    }
+
     public void OnWaitClicked()
     {
         PlayerUnit unit = pendingUnit;
@@ -157,12 +167,20 @@ public class ActionMenu : MonoBehaviour
     public void CompleteTake(PlayerUnit rescuer, PlayerUnit ally)
     {
         //ally refers to the unit holding the ally to be taken
-        if(ally.heldUnit != null)
+        if (ally.heldUnit != null)
         {
             rescuer.TakeUnitFromAlly(ally);
         }
         rescuer.mover.LockMove();
         InputController.Instance.OpenActionMenu(rescuer);
+    }
+
+    public void CompleteTalk(PlayerUnit initiatingUnit, MapObject mapObject)
+    {
+        if (mapObject.TryGetComponent(out MapObjectDialogue mapObjectDialogue))
+        {
+            mapObjectDialogue.InitiateInteraction(initiatingUnit);
+        }
     }
 
     private List<PlayerUnit> FindAdjacentPlayers(PlayerUnit unit)
@@ -235,6 +253,25 @@ public class ActionMenu : MonoBehaviour
         return enemies;
     }
 
+    private List<MapObject> FindTalkableMapObject(PlayerUnit unit)
+    {
+        var talkableMapObjects = new List<MapObject>();
+
+        Vector3Int position = unit.GridPosition;
+        Vector3Int[] neighborCoords = { position + Vector3Int.up, position + Vector3Int.down, position + Vector3Int.right, position + Vector3Int.left };
+        foreach (Vector3Int neighborCoord in neighborCoords)
+        {
+            foreach (MapObject mapObject in MapManager.Instance.GetObjectsAt(neighborCoord))
+            {
+                if (mapObject.TryGetComponent(out MapObjectDialogue mapObjectDialogue))
+                {
+                    if (mapObjectDialogue.CanBeSpokenTo(unit)) talkableMapObjects.Add(mapObject);
+                }
+            }
+        }
+        return talkableMapObjects;
+    }
+
     private bool ValidDropTileExists(PlayerUnit unit)
     {
         Vector3Int position = unit.GridPosition;
@@ -243,7 +280,7 @@ public class ActionMenu : MonoBehaviour
         {
             bool occupied = MapManager.Instance.GetObjectsAt(neighborCoord).Any(o => o is Unit);
             bool walkable = Pathfinder.Instance.GetNode(neighborCoord)?.walkable ?? false;
-            if(!occupied && walkable) return true;
+            if (!occupied && walkable) return true;
         }
         return false;
     }

@@ -32,15 +32,12 @@ MonoBehaviour:
         giveItems: []
         raiseEvents: []
       choices: []
-  - topic: {fileID: 0}
+  - topic: {fileID: 11400000, guid: ba5e64238e34b7e658c6488637244b1c, type: 2}
     alias: 
     responses:
     - requires: []
       forbids: []
-      text: 'Welcome to our village!
-
-
-        It is said it contains a little secret.'
+      text: Heads or Tails?
       outcome:
         unlocks:
         - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
@@ -48,7 +45,23 @@ MonoBehaviour:
         setFlags: []
         giveItems: []
         raiseEvents: []
-      choices: []
+      choices:
+      - label: Heads
+        reply: Nice! You got it!
+        outcome:
+          unlocks: []
+          setFlags: []
+          giveItems: []
+          raiseEvents: []
+        continueTo: {fileID: 0}
+      - label: Tails
+        reply: 
+        outcome:
+          unlocks: []
+          setFlags: []
+          giveItems: []
+          raiseEvents: []
+        continueTo: {fileID: 11400000, guid: a78b74a21251a7e8f84b5056881dfcab, type: 2}
   unlockableTopics:
   - topic: {fileID: 11400000, guid: f11ba426bd10c0d649c1a2d44b8de345, type: 2}
     alias: The Loop
@@ -73,19 +86,18 @@ MonoBehaviour:
       outcome:
         unlocks:
         - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
+          scope: 2
+        setFlags:
+        - flag: {fileID: 11400000, guid: e2a7fa334559065f99b8b920e84c1a1e, type: 2}
           scope: 0
-        setFlags: []
         giveItems: []
         raiseEvents: []
       choices: []
     - requires: []
-      forbids:
-      - {fileID: 11400000, guid: e2a7fa334559065f99b8b920e84c1a1e, type: 2}
+      forbids: []
       text: Listen, I already told you! I don't want to talk about it anymore okay?
       outcome:
-        unlocks:
-        - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
-          scope: 0
+        unlocks: []
         setFlags: []
         giveItems: []
         raiseEvents: []
@@ -94,12 +106,53 @@ MonoBehaviour:
     alias: The Cellar
     responses:
     - requires: []
-      forbids: []
+      forbids:
+      - {fileID: 11400000, guid: c8b96da363b4c458da829e0004607b45, type: 2}
       text: The door is locked, but if you get in this might help you out!
+      outcome:
+        unlocks: []
+        setFlags:
+        - flag: {fileID: 11400000, guid: c8b96da363b4c458da829e0004607b45, type: 2}
+          scope: 1
+        giveItems:
+        - {fileID: 11400000, guid: efd7bbbdeca8437f5ac354f329da4201, type: 2}
+        raiseEvents: []
+      choices: []
+    - requires: []
+      forbids: []
+      text: Good luck! Hopefully that sword I gave you will help you out!
       outcome:
         unlocks: []
         setFlags: []
         giveItems: []
         raiseEvents: []
       choices: []
-  hiddenTopics: []
+  hiddenTopics:
+  - topic: {fileID: 11400000, guid: a78b74a21251a7e8f84b5056881dfcab, type: 2}
+    alias: 
+    responses:
+    - requires: []
+      forbids: []
+      text: Ah, rats, no luck! Want to try again?
+      outcome:
+        unlocks: []
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices:
+      - label: Heads
+        reply: Nice! You got it!
+        outcome:
+          unlocks: []
+          setFlags: []
+          giveItems: []
+          raiseEvents: []
+        continueTo: {fileID: 0}
+      - label: Tails
+        reply: 
+        outcome:
+          unlocks: []
+          setFlags: []
+          giveItems: []
+          raiseEvents: []
+        continueTo: {fileID: 11400000, guid: a78b74a21251a7e8f84b5056881dfcab, type: 2}

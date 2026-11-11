@@ -12,6 +12,7 @@ public enum TargetKind
     Rescue,
     Take,
     Drop,
+    Talk
 }
 
 // "Highlight some cells and let the player click one of them."

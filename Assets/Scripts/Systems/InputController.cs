@@ -134,6 +134,13 @@ public class InputController : MonoBehaviour
             onCancel: () => OpenActionMenu(unit)));
     }
 
+    public void StartTalkTargetSelection(PlayerUnit unit, List<MapObject> talkableObjects)
+    {
+        ChangeState(new TargetSelectState(TargetKind.Talk, unit, CellsOf(talkableObjects), OverlayColor.Green,
+        onConfirm: cell => ActionMenu.Instance.CompleteTalk(unit, TalkableObjectAt(cell)),
+        onCancel: () => OpenActionMenu(unit)));
+    }
+
     public void StartDropTileSelection(PlayerUnit unit)
     {
         List<Vector3Int> dropTiles = new List<Vector3Int>();
@@ -169,14 +176,19 @@ public class InputController : MonoBehaviour
         ChangeState(new UnitSelectedState(unit.mover));
     }
 
-    private static List<Vector3Int> CellsOf(IEnumerable<Unit> units)
+    private static List<Vector3Int> CellsOf(IEnumerable<MapObject> objects)
     {
-        return units.Select(u => u.GridPosition).ToList();
+        return objects.Select(u => u.GridPosition).ToList();
     }
 
     private static T UnitAt<T>(Vector3Int cell) where T : Unit
     {
         return MapManager.Instance.GetObjectsAt(cell).OfType<T>().FirstOrDefault();
+    }
+
+    private static MapObject TalkableObjectAt(Vector3Int cell)
+    {
+        return MapManager.Instance.GetObjectsAt(cell).FirstOrDefault(o => o.TryGetComponent(out MapObjectDialogue mapObjectDialogue));
     }
 
 

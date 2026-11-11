@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84832a48cac7c6d9e80372889da571d1, type: 3}
   m_Name: Choice
   m_EditorClassIdentifier: Assembly-CSharp::Topic
-  displayName: 
+  displayName: Choice
