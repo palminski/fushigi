@@ -17,26 +17,89 @@ MonoBehaviour:
   defaultTopics:
   - topic: {fileID: 11400000, guid: 24ee47524ecac37e482070852b9792be, type: 2}
     alias: 
-    response: Yup! This is our village! Welcome! Please don't look in the cellar...
-    unlocks: []
-  - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
-    alias: The celler
-    response: 'What? There is nothing down there, Surely!
+    responses:
+    - requires: []
+      forbids: []
+      text: 'Welcome to our village!
 
 
-      Well, if you simply
-      must know, the mayor''s son hid some secret down there.'
-    unlocks:
-    - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
-      scope: 2
+        It is said it contains a little secret.'
+      outcome:
+        unlocks:
+        - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
+          scope: 2
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
+  - topic: {fileID: 0}
+    alias: 
+    responses:
+    - requires: []
+      forbids: []
+      text: 'Welcome to our village!
+
+
+        It is said it contains a little secret.'
+      outcome:
+        unlocks:
+        - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
+          scope: 2
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
   unlockableTopics:
   - topic: {fileID: 11400000, guid: f11ba426bd10c0d649c1a2d44b8de345, type: 2}
     alias: The Loop
-    response: The Loop? I am not sure I know what you mean. I just mean like string
-      you can thread a needle with.
-    unlocks: []
+    responses:
+    - requires: []
+      forbids: []
+      text: Like string?
+      outcome:
+        unlocks: []
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
   - topic: {fileID: 11400000, guid: 4d20e5ec412e5d9bd8aa1b9a452493ed, type: 2}
     alias: A Secret
-    response: I have heard there is a [spool of magic string](loop) down there, though
-      you will need a key to open the door to the cellar.
-    unlocks: []
+    responses:
+    - requires: []
+      forbids:
+      - {fileID: 11400000, guid: e2a7fa334559065f99b8b920e84c1a1e, type: 2}
+      text: Okay, I will only say this once but... I hear there is treasure in the
+        cellar
+      outcome:
+        unlocks:
+        - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
+          scope: 0
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
+    - requires: []
+      forbids:
+      - {fileID: 11400000, guid: e2a7fa334559065f99b8b920e84c1a1e, type: 2}
+      text: Listen, I already told you! I don't want to talk about it anymore okay?
+      outcome:
+        unlocks:
+        - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
+          scope: 0
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
+  - topic: {fileID: 11400000, guid: 948b4cdf1f9102de08483d487751a6ae, type: 2}
+    alias: The Cellar
+    responses:
+    - requires: []
+      forbids: []
+      text: The door is locked, but if you get in this might help you out!
+      outcome:
+        unlocks: []
+        setFlags: []
+        giveItems: []
+        raiseEvents: []
+      choices: []
+  hiddenTopics: []

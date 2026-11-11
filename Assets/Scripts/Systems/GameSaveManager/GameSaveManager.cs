@@ -6,12 +6,14 @@ using UnityEngine;
 public class RunData
 {
     public List<string> knownTopics = new List<string>();
+    public List<string> storyFlags = new List<string>();
 }
 
 [System.Serializable]
 public class PersistentData
 {
     public List<string> knownTopics = new List<string>();
+    public List<string> storyFlags = new List<string>();
 }
 
 public static class GameSaveManager
@@ -22,6 +24,7 @@ public static class GameSaveManager
     private static PersistentData persistent;
     public static PersistentData Persistent => persistent ??= Load<PersistentData>("persistent.json");
     private static string PathFor(string filename) => Path.Combine(Application.persistentDataPath, filename);
+
     
     // Save Methods
     public static void SaveRun() => Save(Run, "run.json");
@@ -34,18 +37,41 @@ public static class GameSaveManager
         return Run.knownTopics.Contains(topic.name) || Persistent.knownTopics.Contains(topic.name);
     }
 
-    public static void LearnTopic(Topic topic, UnlockScope scope = UnlockScope.Global)
+    public static bool HasFlag(StoryFlag flag)
+    {
+        if (flag == null) return false;
+        return Run.storyFlags.Contains(flag.name) || Persistent.storyFlags.Contains(flag.name);
+
+    }
+
+    public static void LearnTopic(Topic topic, MemoryScope scope = MemoryScope.Global)
     {
         if(topic == null) return;
 
         switch (scope)
         {
-            case UnlockScope.Run:
+            case MemoryScope.Run:
             AddOnce(Run.knownTopics, topic.name);
             break;
 
-            case UnlockScope.Global:
+            case MemoryScope.Global:
             if(AddOnce(Persistent.knownTopics, topic.name)) SavePersistent();
+            break;
+        }
+    }
+
+    public static void SetFlag(StoryFlag flag, MemoryScope scope)
+    {
+        if(flag == null) return;
+
+        switch (scope)
+        {
+            case MemoryScope.Run:
+            AddOnce(Run.storyFlags, flag.name);
+            break;
+
+            case MemoryScope.Global:
+            if(AddOnce(Persistent.storyFlags, flag.name)) SavePersistent();
             break;
         }
     }

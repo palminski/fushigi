@@ -34,6 +34,7 @@ public class TopicDialogueScreen : OverlayScreen
     private NpcDialogue dialogue;
     private PlayerUnit initiatingUnit;
     private readonly List<Topic> unlockedThisConversation = new List<Topic>();
+    private readonly List<StoryFlag> flagsThisConversation = new List<StoryFlag>();
     private readonly List<LogEntry> log = new List<LogEntry>();
 
     public void Show(NpcDialogue dialogue, PlayerUnit initiatingUnit)
@@ -56,15 +57,21 @@ public class TopicDialogueScreen : OverlayScreen
     {
         if(topicEntry.topic == null) return false;
         if(dialogue.defaultTopics.Contains(topicEntry)) return true;
+        if(dialogue.hiddenTopics.Contains(topicEntry)) return true;
 
         return unlockedThisConversation.Contains(topicEntry.topic)
         || GameSaveManager.TopicKnown(topicEntry.topic)
         || (initiatingUnit != null && initiatingUnit.personalTopics.Contains(topicEntry.topic));
     }
 
+    private bool HasFlag(StoryFlag flag)
+    {
+        return flag != null && (flagsThisConversation.Contains(flag) || GameSaveManager.HasFlag(flag));
+    }
+
     private List<TopicEntry> AskableTopics()
     {
-        return dialogue.AllTopics.Where(CanAsk).OrderBy(entry => entry.Label).ToList();
+        return dialogue.ListedTopics.Where(CanAsk).OrderBy(entry => entry.Label).ToList();
     }
 
     private void RebuildTopicList()
@@ -82,10 +89,23 @@ public class TopicDialogueScreen : OverlayScreen
     // Unlocks are learned before the response is logged, so the response can already link the topics it unlocks
     private void Ask(TopicEntry topicEntry)
     {
-        foreach (TopicUnlock unlock in topicEntry.unlocks)
+        TopicResponse response = ChooseRespone(topicEntry);
+        if(response == null)
+        {
+            Debug.LogWarning($"{dialogue.name}: no response to {topicEntry.Label} fits the current flags - add one with no conditions at the end");
+            return;
+        }
+        ApplyOutcome(response.outcome);
+        AddToLog(topicEntry.Label, response.text, topicEntry.topic);
+        RebuildTopicList();
+    }
+
+    private void ApplyOutcome(DialogueOutcome outcome)
+    {
+        foreach (TopicUnlock unlock in outcome.unlocks)
         {
             if(unlock.topic == null) continue;
-            if(unlock.scope == UnlockScope.Conversation)
+            if(unlock.scope == MemoryScope.Conversation)
             {
                 if(!unlockedThisConversation.Contains(unlock.topic)) unlockedThisConversation.Add(unlock.topic);
             }
@@ -94,8 +114,24 @@ public class TopicDialogueScreen : OverlayScreen
                 GameSaveManager.LearnTopic(unlock.topic, unlock.scope);
             }
         }
-        AddToLog(topicEntry.Label, topicEntry.response, topicEntry.topic);
-        RebuildTopicList();
+
+        foreach (FlagChange change in outcome.setFlags)
+        {
+            if(change.flag == null) continue;
+            if(change.scope == MemoryScope.Conversation)
+            {
+                if(!flagsThisConversation.Contains(change.flag)) flagsThisConversation.Add(change.flag);
+            }
+            else
+            {
+                GameSaveManager.SetFlag(change.flag, change.scope);
+            }
+        }
+    }
+
+    private TopicResponse ChooseRespone(TopicEntry entry)
+    {
+        return entry.responses.FirstOrDefault(response => response.requires.All(HasFlag) && !response.forbids.Any(HasFlag));
     }
 
     private void AddToLog(string heading, string text, Topic topic = null)
