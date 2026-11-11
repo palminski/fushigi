@@ -38,6 +38,9 @@ public class TopicDialogueScreen : OverlayScreen
     private readonly List<LogEntry> log = new List<LogEntry>();
 
     private readonly List<DialogueEvent> pendingEvents = new List<DialogueEvent>();
+    private TopicResponse awaitingChoice;
+    private Topic currentTopic;
+    private bool AwaitingChoice => awaitingChoice != null;
 
     public void Show(NpcDialogue dialogue, PlayerUnit initiatingUnit)
     {
@@ -78,7 +81,7 @@ public class TopicDialogueScreen : OverlayScreen
 
     private void RebuildTopicList()
     {
-        foreach (Transform child in topicList) Destroy(child.gameObject);
+        ClearButtons();
 
         foreach (TopicEntry entry in AskableTopics())
         {
@@ -86,11 +89,19 @@ public class TopicDialogueScreen : OverlayScreen
             button.GetComponentInChildren<TMP_Text>().text = entry.Label;
             button.onClick.AddListener(() => Ask(entry));
         }
+
+        goodbyeButton.interactable = true;
+    }
+
+    private void ClearButtons()
+    {
+        foreach (Transform child in topicList) Destroy(child.gameObject);
     }
 
     // Unlocks are learned before the response is logged, so the response can already link the topics it unlocks
     private void Ask(TopicEntry topicEntry)
     {
+        currentTopic = topicEntry.topic;
         TopicResponse response = ChooseResponse(topicEntry);
         if(response == null)
         {
@@ -99,7 +110,53 @@ public class TopicDialogueScreen : OverlayScreen
         }
         AddToLog(topicEntry.Label, response.text, topicEntry.topic);
         ApplyOutcome(response.outcome);
+        if(response.choices.Count > 0)
+        {
+            ShowChoices(response);
+        }
+        else
+        {
+            RebuildTopicList();            
+        }
+    }
+
+    private void ShowChoices(TopicResponse response)
+    {
+        awaitingChoice = response;
+        ClearButtons();
+        goodbyeButton.interactable = false;
+
+        foreach(DialogueChoice choice in response.choices)
+        {
+            Button button = Instantiate(topicButtonPrefab, topicList);
+            button.GetComponentInChildren<TMP_Text>().text = choice.label;
+            button.onClick.AddListener(() => Choose(choice));
+        }
+    }
+
+    private void Choose(DialogueChoice choice)
+    {
+        awaitingChoice = null;
+
+        AddToLog(choice.label, choice.reply, currentTopic);
+        ApplyOutcome(choice.outcome);
+
+        if(choice.continueTo != null)
+        {
+            TopicEntry next = FindEntry(choice.continueTo);
+            if (next != null)
+            {
+                Ask(next); 
+                return;
+            }
+            Debug.LogWarning($"{dialogue.name}: Choice \"{choice.label}\" continues to {choice.continueTo.name}, but there is no entry for it on this NPC");
+        }
         RebuildTopicList();
+    }
+
+    private TopicEntry FindEntry(Topic topic)
+    {
+        return dialogue.AllTopics.FirstOrDefault(entry => entry.topic == topic);
     }
 
     private void ApplyOutcome(DialogueOutcome outcome)
@@ -268,6 +325,7 @@ public class TopicDialogueScreen : OverlayScreen
     // ScreenManager sends every click here; if it landed on a link in the log, ask about that topic
     public override void OnClick()
     {
+        if (AwaitingChoice) return;
         int linkIndex = TMP_TextUtilities.FindIntersectingLink(logText, Mouse.current.position.ReadValue(), null);
         if (linkIndex < 0) return;
 
@@ -284,6 +342,7 @@ public class TopicDialogueScreen : OverlayScreen
 
     public override void OnCancel()
     {
+        if (AwaitingChoice) return;
         Close();
     }
 
