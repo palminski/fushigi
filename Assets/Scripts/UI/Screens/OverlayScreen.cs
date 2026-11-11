@@ -13,6 +13,9 @@ public abstract class OverlayScreen : MonoBehaviour
         if (IsClosed) return;
         IsClosed = true;
         ScreenManager.Instance.CloseScreen(this);
+        OnClosed();
         Destroy(gameObject);
     }
+
+    protected virtual void OnClosed() {}
 }

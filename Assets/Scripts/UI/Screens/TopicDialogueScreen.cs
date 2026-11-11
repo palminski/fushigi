@@ -37,6 +37,8 @@ public class TopicDialogueScreen : OverlayScreen
     private readonly List<StoryFlag> flagsThisConversation = new List<StoryFlag>();
     private readonly List<LogEntry> log = new List<LogEntry>();
 
+    private readonly List<DialogueEvent> pendingEvents = new List<DialogueEvent>();
+
     public void Show(NpcDialogue dialogue, PlayerUnit initiatingUnit)
     {
         this.dialogue = dialogue;
@@ -89,14 +91,14 @@ public class TopicDialogueScreen : OverlayScreen
     // Unlocks are learned before the response is logged, so the response can already link the topics it unlocks
     private void Ask(TopicEntry topicEntry)
     {
-        TopicResponse response = ChooseRespone(topicEntry);
+        TopicResponse response = ChooseResponse(topicEntry);
         if(response == null)
         {
             Debug.LogWarning($"{dialogue.name}: no response to {topicEntry.Label} fits the current flags - add one with no conditions at the end");
             return;
         }
-        ApplyOutcome(response.outcome);
         AddToLog(topicEntry.Label, response.text, topicEntry.topic);
+        ApplyOutcome(response.outcome);
         RebuildTopicList();
     }
 
@@ -127,9 +129,25 @@ public class TopicDialogueScreen : OverlayScreen
                 GameSaveManager.SetFlag(change.flag, change.scope);
             }
         }
+
+        foreach (Item item in outcome.giveItems)
+        {
+            if (item == null) continue;
+            if(initiatingUnit != null)
+            {
+                AddToLog(null, initiatingUnit.inventory.AddItem(item) ? $"<i>{initiatingUnit.name} received {item.name}</i>" : $"<i>{item.name} was sent to the convoy</i>");
+            }
+            else
+            {
+                GameSaveManager.SendToConvoy(item);
+                AddToLog(null, $"<i>{item.name} was sent to the convoy</i>");
+            }
+        }
+
+        pendingEvents.AddRange(outcome.raiseEvents.Where(e => e != null));
     }
 
-    private TopicResponse ChooseRespone(TopicEntry entry)
+    private TopicResponse ChooseResponse(TopicEntry entry)
     {
         return entry.responses.FirstOrDefault(response => response.requires.All(HasFlag) && !response.forbids.Any(HasFlag));
     }
@@ -267,6 +285,11 @@ public class TopicDialogueScreen : OverlayScreen
     public override void OnCancel()
     {
         Close();
+    }
+
+    protected override void OnClosed()
+    {
+        foreach (DialogueEvent dialogueEvent in pendingEvents.Distinct()) dialogueEvent.Raise();
     }
 
 

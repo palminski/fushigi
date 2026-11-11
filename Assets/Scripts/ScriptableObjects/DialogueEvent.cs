@@ -7,4 +7,7 @@ using UnityEngine;
 public class DialogueEvent : ScriptableObject
 {
     [TextArea(2, 4)] public string notes; // optional: what listeners are expected to do
+
+    public static event System.Action<DialogueEvent> Raised;
+    public void Raise() => Raised?.Invoke(this);
 }

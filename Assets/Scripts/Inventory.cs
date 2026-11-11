@@ -12,6 +12,27 @@ public class Inventory
     public int maxCapacity = 5;
     public WeaponInstance EquippedWeapon => items.OfType<WeaponInstance>().FirstOrDefault();
 
+    public bool IsFull => items.Count >= maxCapacity;
+
+    public static ItemInstance CreateInstance(Item item)
+    {
+        if (item is Weapon weapon) return new WeaponInstance { data = weapon, currentDurability = weapon.maxDurability };
+        if (item is Consumable) return new ConsumableInstance { data = item };
+        return new ItemInstance {data = item};
+    }
+
+    public bool AddItem(Item item)
+    {
+        if(item == null) return false;
+        if (IsFull)
+        {
+            GameSaveManager.SendToConvoy(item);
+            return false;
+        }
+        items.Add(CreateInstance(item));
+        return true;
+    }
+
     public void Equip(WeaponInstance weapon)
     {
         int index = items.IndexOf(weapon);
@@ -25,12 +46,7 @@ public class Inventory
         items.Clear();
         foreach (Item item in startingItems)
         {
-            if (item is Weapon weapon)
-                items.Add(new WeaponInstance { data = weapon, currentDurability = weapon.maxDurability });
-            else if (item is Consumable)
-                items.Add(new ConsumableInstance { data = item });
-            else
-                items.Add(new ItemInstance { data = item });
+            items.Add(CreateInstance(item));
         }
     }
 }

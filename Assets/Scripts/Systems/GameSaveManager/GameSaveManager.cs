@@ -7,6 +7,7 @@ public class RunData
 {
     public List<string> knownTopics = new List<string>();
     public List<string> storyFlags = new List<string>();
+    public List<string> convoy = new List<string>();
 }
 
 [System.Serializable]
@@ -42,6 +43,14 @@ public static class GameSaveManager
         if (flag == null) return false;
         return Run.storyFlags.Contains(flag.name) || Persistent.storyFlags.Contains(flag.name);
 
+    }
+
+    //
+    public static void SendToConvoy(Item item)
+    {
+        if(item == null) return;
+        Run.convoy.Add(item.name);
+        Debug.Log($"[Convoy is a stub] {item.name} has been sent to the convoy");
     }
 
     public static void LearnTopic(Topic topic, MemoryScope scope = MemoryScope.Global)
