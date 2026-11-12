@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 //Manages objects at locations and allows translation between world and grid coordinates
@@ -7,6 +8,7 @@ public class MapManager : MonoBehaviour
 {
     public static MapManager Instance { get; private set; }
 
+    public IEnumerable<MapObject> AllObjects => gridObjects.Values.SelectMany(objects => objects);
     private Dictionary<Vector3Int, List<MapObject>> gridObjects = new();
 
     void Awake()

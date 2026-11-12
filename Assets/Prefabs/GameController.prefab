@@ -5227,6 +5227,7 @@ GameObject:
   - component: {fileID: 8776042924790291260}
   - component: {fileID: 5208394169454245461}
   - component: {fileID: 706148483571779369}
+  - component: {fileID: 2110033673784801914}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -5398,6 +5399,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebugControls
   testTopicDialogue: {fileID: 0}
   testTopicDialogueInitiator: {fileID: 0}
+--- !u!114 &2110033673784801914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5598356921465743733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bc07a725a18c015e99fedac8804d1d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapObjectIndicatorManager
+  canTalkIndicator:
+    sprite: {fileID: 21300000, guid: 4b0aac9fa80e3de2993d06543338ad1f, type: 3}
+    offset: {x: 0, y: 0.7}
+    size: {x: 1, y: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    sortingOrder: 50
 --- !u!1 &6244706377311829881
 GameObject:
   m_ObjectHideFlags: 0

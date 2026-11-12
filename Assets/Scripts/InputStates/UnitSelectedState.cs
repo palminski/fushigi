@@ -14,10 +14,23 @@ public class UnitSelectedState : InputState
         Mover = mover;
     }
 
+    public override void Enter()
+    {
+        foreach (MapObject mapObject in MapManager.Instance.AllObjects)
+        {
+            
+            if (mapObject.TryGetComponent(out MapObjectDialogue mapObjectDialogue))
+            {
+                if (mapObjectDialogue.CanBeSpokenTo(Mover.playerUnit)) MapObjectIndicatorManager.Instance.TurnOnIndicator(mapObject, MapObjectIndicatorManager.IndicatorType.Talk);
+            }
+        }
+    }
+
     public override void Exit()
     {
         MapOverlay.Instance.ClearSelection();
         MapOverlay.Instance.ClearPath();
+        MapObjectIndicatorManager.Instance.HideAll(MapObjectIndicatorManager.IndicatorType.Talk);
         forecast.HidePanel();
     }
 

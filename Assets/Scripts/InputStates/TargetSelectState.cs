@@ -44,12 +44,24 @@ public class TargetSelectState : InputState
 
     public override void Enter()
     {
+        if (Kind == TargetKind.Talk)
+        {
+            foreach (MapObject mapObject in MapManager.Instance.AllObjects)
+            {
+                
+                if (mapObject.TryGetComponent(out MapObjectDialogue mapObjectDialogue))
+                {
+                    if (mapObjectDialogue.CanBeSpokenTo(Unit)) MapObjectIndicatorManager.Instance.TurnOnIndicator(mapObject, MapObjectIndicatorManager.IndicatorType.Talk);
+                }
+            }
+        }
         MapOverlay.Instance.HighlightCells(targetCells,highlightColor);
     }
 
     public override void Exit()
     {
         MapOverlay.Instance.ClearSelection();
+        MapObjectIndicatorManager.Instance.HideAll(MapObjectIndicatorManager.IndicatorType.Talk);
         forecast?.HidePanel();
     }
 

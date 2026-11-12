@@ -4,17 +4,6 @@ using System.Linq;
 public class UnitStatIndicatorManager : MonoBehaviour
 {
     public static UnitStatIndicatorManager Instance {get; private set; }
-
-    [System.Serializable]
-    public class IndicatorParams
-    {
-        public Sprite sprite;
-        public Vector2 offset;
-        public Vector2 size = Vector2.one;
-        public Color color = Color.white;
-        public int sortingOrder;
-    }
-
     [SerializeField] private IndicatorParams healthBarOutline;
     [SerializeField] private IndicatorParams healthBar;
     [SerializeField] private IndicatorParams heldUnitMarker;
@@ -55,10 +44,10 @@ public class UnitStatIndicatorManager : MonoBehaviour
 
         UnitIndicators unitIndicators = new UnitIndicators
         {
-            healthBar = CreateAndAssignRenderer(unit, "Health Bar", healthBar),
-            healthBarOutline = CreateAndAssignRenderer(unit, "Health Bar Outline", healthBarOutline),
-            heldUnitMarker = CreateAndAssignRenderer(unit, "Held Unit Marker", heldUnitMarker),
-            unitHighlight = CreateAndAssignRenderer(unit, "Unit Highlight", unitHighlight),
+            healthBar = Indicators.CreateAndAssignRenderer(unit.transform, "Health Bar", healthBar),
+            healthBarOutline = Indicators.CreateAndAssignRenderer(unit.transform, "Health Bar Outline", healthBarOutline),
+            heldUnitMarker = Indicators.CreateAndAssignRenderer(unit.transform, "Held Unit Marker", heldUnitMarker),
+            unitHighlight = Indicators.CreateAndAssignRenderer(unit.transform, "Unit Highlight", unitHighlight),
         };
 
         unitIndicators.unitHighlight.enabled = false;
@@ -130,17 +119,5 @@ public class UnitStatIndicatorManager : MonoBehaviour
         }
     }
 
-    private SpriteRenderer CreateAndAssignRenderer(Unit unit, string name, IndicatorParams parameters)
-    {
-        GameObject indicatorObject = new GameObject(name);
-        indicatorObject.transform.SetParent(unit.transform,false);
-        indicatorObject.transform.localPosition = parameters.offset;
-        indicatorObject.transform.localScale = new Vector3(parameters.size.x, parameters.size.y, 1f);
-
-        SpriteRenderer spriteRenderer = indicatorObject.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = parameters.sprite;
-        spriteRenderer.color = parameters.color;
-        spriteRenderer.sortingOrder = parameters.sortingOrder;
-        return spriteRenderer;
-    }
+    
 }

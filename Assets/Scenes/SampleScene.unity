@@ -2837,8 +2837,9 @@ GameObject:
   - component: {fileID: 173142424}
   - component: {fileID: 173142423}
   - component: {fileID: 173142422}
+  - component: {fileID: 173142426}
   m_Layer: 0
-  m_Name: Enemy Soldier
+  m_Name: Talkable Baddie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3014,6 +3015,25 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &173142426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 173142420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c95f37f7a00b1a2e0a545190bfd6220c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapObjectDialogue
+  conversation: {fileID: 11400000, guid: cf1870acd11c6251dac81b540fede860, type: 2}
+  npcDialogue: {fileID: 0}
+  unitsWillSpeakTo:
+  - {fileID: 1557982982}
+  requiredFlags: []
+  forbiddenFlags: []
+  shouldDestroyClassInstanceUponDialogueCompletion: 1
 --- !u!1 &506245353
 GameObject:
   m_ObjectHideFlags: 0
@@ -33675,6 +33695,22 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1972032056487352804, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179001831182685632, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179001831182685632, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179001831182685632, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179001831182685632, guid: 24b27f091cd9fea4aa234b02f29b5787, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
