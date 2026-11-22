@@ -254,7 +254,7 @@ public class TradeMenu : MonoBehaviour
 
     private void AutoEquip(Unit unit)
     {
-        WeaponInstance first = unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault();
+        WeaponInstance first = unit.UsableWeapons.FirstOrDefault();
         if (first != null) unit.inventory.Equip(first);
     }
 

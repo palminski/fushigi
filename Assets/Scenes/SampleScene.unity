@@ -12573,9 +12573,8 @@ MonoBehaviour:
   mover: {fileID: 839472958}
   inventory:
     startingItems:
-    - {fileID: 11400000, guid: a0376ed8b1f5b4c4e83f2e5b571529d9, type: 2}
-    - {fileID: 11400000, guid: a0376ed8b1f5b4c4e83f2e5b571529d9, type: 2}
-    - {fileID: 11400000, guid: a0376ed8b1f5b4c4e83f2e5b571529d9, type: 2}
+    - {fileID: 11400000, guid: efd7bbbdeca8437f5ac354f329da4201, type: 2}
+    - {fileID: 11400000, guid: d6ff981aff7639893bfd34452e96d430, type: 2}
     items: []
     maxCapacity: 5
   hasPickedUpUnit: 0
@@ -32383,7 +32382,7 @@ MonoBehaviour:
   mover: {fileID: 1557982980}
   inventory:
     startingItems:
-    - {fileID: 11400000, guid: efd7bbbdeca8437f5ac354f329da4201, type: 2}
+    - {fileID: 11400000, guid: 81dd186edc11680ef97dab5b8f514b33, type: 2}
     - {fileID: 11400000, guid: d6ff981aff7639893bfd34452e96d430, type: 2}
     - {fileID: 11400000, guid: a0376ed8b1f5b4c4e83f2e5b571529d9, type: 2}
     - {fileID: 11400000, guid: 619a3af196cb17e77a4e490af51803a0, type: 2}
@@ -32830,7 +32829,7 @@ MonoBehaviour:
   mover: {fileID: 1697729114}
   inventory:
     startingItems:
-    - {fileID: 11400000, guid: efd7bbbdeca8437f5ac354f329da4201, type: 2}
+    - {fileID: 11400000, guid: dadbf0967b471abd892857885cd8cab3, type: 2}
     - {fileID: 11400000, guid: d6ff981aff7639893bfd34452e96d430, type: 2}
     - {fileID: 11400000, guid: a0376ed8b1f5b4c4e83f2e5b571529d9, type: 2}
     - {fileID: 11400000, guid: 619a3af196cb17e77a4e490af51803a0, type: 2}

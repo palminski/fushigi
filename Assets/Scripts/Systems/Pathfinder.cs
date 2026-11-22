@@ -179,9 +179,8 @@ public class Pathfinder : MonoBehaviour
 
         foreach (Node node in reachable)
         {
-            foreach (ItemInstance item in unit.inventory.items)
+            foreach (WeaponInstance weapon in unit.UsableWeapons)
             {
-                if(item is not WeaponInstance weapon) continue;
                 foreach (Node attackNode in GetAttackableTiles(Ground.GetCellCenterWorld(node.gridPosition), weapon.minRange, weapon.maxRange))
                 {
                     attackableSet.Add(attackNode);

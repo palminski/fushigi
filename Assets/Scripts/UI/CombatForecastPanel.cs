@@ -40,7 +40,7 @@ public class CombatForecastPanel : MonoBehaviour
         playerDamageText.text = preview.attackerDoubles ? $"{preview.damageDealt} (x2)" : preview.damageDealt.ToString();
         playerHitText.text = $"{preview.attackerHitChance}%";
 
-        WeaponInstance defWeapon = defender.inventory.EquippedWeapon;
+        WeaponInstance defWeapon = defender.EquippedWeapon;
         enemyNameText.text = defender.gameObject.name;
 
         enemyNameText.text = defender.character != null ? defender.character.characterName : defender.gameObject.name;

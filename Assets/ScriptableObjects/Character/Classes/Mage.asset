@@ -24,3 +24,4 @@ MonoBehaviour:
   movementClass: 0
   promotesTo: []
   skills: []
+  usableWeapons: 050000000600000007000000

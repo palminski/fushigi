@@ -25,4 +25,6 @@ public class JobClass : ScriptableObject
     public List<JobClass> promotesTo;
 
     public List<Skill> skills;
+
+    public List<WeaponType> usableWeapons;
 }

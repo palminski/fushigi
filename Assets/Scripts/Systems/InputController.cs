@@ -89,7 +89,7 @@ public class InputController : MonoBehaviour
             onConfirm: cell =>
             {
                 EnemyUnit target = UnitAt<EnemyUnit>(cell);
-                WeaponInstance weapon = forecast.WeaponFor(target) ?? unit.inventory.EquippedWeapon;
+                WeaponInstance weapon = forecast.WeaponFor(target) ?? unit.EquippedWeapon;
                 unit.inventory.Equip(weapon);
                 StartCoroutine(unit.AttackAndEndTurn(target, weapon));
             },
@@ -104,8 +104,8 @@ public class InputController : MonoBehaviour
             onConfirm: cell =>
             {
                 EnemyUnit target = UnitAt<EnemyUnit>(cell);
-                WeaponInstance equipped = forecast.WeaponFor(target) ?? unit.inventory.EquippedWeapon;
-                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : unit.inventory.items.OfType<WeaponInstance>().FirstOrDefault(w => w.CanHitAt(1));
+                WeaponInstance equipped = forecast.WeaponFor(target) ?? unit.EquippedWeapon;
+                WeaponInstance weapon = (equipped != null && equipped.CanHitAt(1)) ? equipped : unit.UsableWeapons.FirstOrDefault(w => w.CanHitAt(1));
                 unit.inventory.Equip(weapon);
                 StartCoroutine(unit.CaptureAndEndTurn(target, weapon));
             },

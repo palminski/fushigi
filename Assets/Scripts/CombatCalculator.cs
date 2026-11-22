@@ -88,7 +88,7 @@ public static class CombatCalculator
         int distance = Mathf.Abs(attackerPos.x - defender.GridPosition.x) + Mathf.Abs(attackerPos.y - defender.GridPosition.y);
 
         int damageDealt = isCaptureAttempt ? CalcCaptureDamage(attacker, defender, weapon) : CalcDamage(attacker, defender, weapon);
-        WeaponInstance defWeapon = defender.inventory.EquippedWeapon;
+        WeaponInstance defWeapon = defender.EquippedWeapon;
         bool defenderCanCounter = defWeapon != null && distance >= defWeapon.minRange && distance <= defWeapon.maxRange;
         int damageReceived = defenderCanCounter ? CalcDamage(defender, attacker, defWeapon) : 0;
         bool killsDefender = damageDealt >= defender.unitAttributes.currentHealth;
@@ -109,7 +109,7 @@ public static class CombatCalculator
         int distance = Mathf.Abs(attackerPos.x - defender.GridPosition.x) + Mathf.Abs(attackerPos.y - defender.GridPosition.y);
 
         int atkDmg = CalcDamage(attacker, defender, weapon);
-        WeaponInstance defWeapon = defender.inventory.EquippedWeapon;
+        WeaponInstance defWeapon = defender.EquippedWeapon;
         bool canCounter = defWeapon != null && distance >= defWeapon.minRange && distance <= defWeapon.maxRange;
         int defDmg = canCounter ? CalcDamage(defender, attacker, defWeapon) : 0;
         bool attackerDoubles = attacker.unitAttributes.speed >= defender.unitAttributes.speed + 5;

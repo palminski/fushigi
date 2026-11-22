@@ -7,9 +7,7 @@ public enum WeaponType
     Axe,
     Bow,
     Staff,
-    LightMagic,
-    DarkMagic,
-    ElementMagic,
+    Magic,
 }
 
 

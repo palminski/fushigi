@@ -10,7 +10,6 @@ public class Inventory
     public List<ItemInstance> items = new List<ItemInstance>();
 
     public int maxCapacity = 5;
-    public WeaponInstance EquippedWeapon => items.OfType<WeaponInstance>().FirstOrDefault();
 
     public bool IsFull => items.Count >= maxCapacity;
 

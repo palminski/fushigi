@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public abstract class Unit : MapObject
@@ -21,6 +23,9 @@ public abstract class Unit : MapObject
     public event System.Action<Unit> PickedUp; // raised on the unit being picked up (rescued or captured), with who picked it up
     public event System.Action<Unit> Dropped;  // raised on a carried unit when it's set down, with who carried it
     public event System.Action<Unit> Released; // raised on a captive just before it's let go (and removed), with who held it
+
+    public IEnumerable<WeaponInstance> UsableWeapons => inventory.items.OfType<WeaponInstance>().Where(w => CanUse(w.WeaponData));
+    public WeaponInstance EquippedWeapon => UsableWeapons.FirstOrDefault();
 
     protected virtual void Awake()
     {
@@ -120,7 +125,7 @@ public abstract class Unit : MapObject
         if (weapon == null) yield break;
         CombatResult result = CombatCalculator.ResolveCapture(this, target, weapon);
         yield return CombatPresenter.Instance.Present(this,target,result);
-        WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.inventory.EquippedWeapon : null;
+        WeaponInstance defWeapon = (result.defenderSwings > 0 && target != null) ? target.EquippedWeapon : null;
 
         if (result.defenderDied && target != null)
         {
@@ -133,5 +138,32 @@ public abstract class Unit : MapObject
         for (int i = 0; i < result.defenderSwings; i++) defWeapon?.Use();
         if(result.totalDamageToAttacker > 0) TakeDamage(result.totalDamageToAttacker);
         for (int i = 0; i < result.attackerSwings; i++) weapon.Use();
+    }
+
+    public bool CanUse(Weapon weapon)
+    {
+        if(weapon == null) return false;
+        if(character == null)
+        {
+            return true;
+        }
+
+        JobClass jobClass = character.characterClass;
+        if(jobClass != null && !jobClass.usableWeapons.Contains(weapon.weaponType)) return false;
+        List<Skill> unitSkills = Skills();
+        foreach (Skill requiredSkill in weapon.requiredSkills)
+        {
+            if (!unitSkills.Contains(requiredSkill)) return false;
+        }
+        return true;
+    }
+
+    public List<Skill> Skills()
+    {
+        List<Skill> allSkills = new();
+        if(character == null) return allSkills;
+        allSkills.AddRange(character.skills);
+        if(character.characterClass != null) allSkills.AddRange(character.characterClass.skills);
+        return allSkills;
     }
 }

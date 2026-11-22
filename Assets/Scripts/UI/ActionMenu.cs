@@ -238,7 +238,7 @@ public class ActionMenu : MonoBehaviour
     {
         var enemies = new List<EnemyUnit>();
 
-        bool hasWeaponsThatCanCaptureAtRangeOne = unit.inventory.items.OfType<WeaponInstance>().Any(w => w.CanHitAt(1));
+        bool hasWeaponsThatCanCaptureAtRangeOne = unit.UsableWeapons.Any(w => w.CanHitAt(1));
         if (!hasWeaponsThatCanCaptureAtRangeOne) return enemies;
 
         Vector3Int position = unit.GridPosition;

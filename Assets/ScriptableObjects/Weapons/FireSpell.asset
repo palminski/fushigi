@@ -17,5 +17,8 @@ MonoBehaviour:
   minRange: 1
   maxRange: 2
   might: 3
+  hit: 80
   weight: 1
-  weaponType: 7
+  maxDurability: 10
+  weaponType: 5
+  requiredSkills: []

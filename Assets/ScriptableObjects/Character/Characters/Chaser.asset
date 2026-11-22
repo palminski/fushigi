@@ -33,5 +33,6 @@ MonoBehaviour:
     build: 5
     magic: 4
     movement: 0
-  skills: []
+  skills:
+  - {fileID: 11400000, guid: d9142b6813e73ed1da2d438aa293408f, type: 2}
   color: {r: 0, g: 0, b: 0, a: 0}

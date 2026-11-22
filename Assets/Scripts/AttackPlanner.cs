@@ -15,14 +15,14 @@ public static class AttackPlanner
     // Weapons in the unit's inventory that can hit something `distance` tiles away
     public static List<WeaponInstance> WeaponsInRange(Unit unit, int distance)
     {
-        return unit.inventory.items.OfType<WeaponInstance>().Where(w => w.CanHitAt(distance)).ToList();
+        return unit.UsableWeapons.Where(w => w.CanHitAt(distance)).ToList();
     }
 
     // For each weapon that can reach the target, the best tile to attack from
     public static List<(WeaponInstance weapon, Node tile)> AttackOptions(Unit attacker, Unit target, List<Node> reachable)
     {
         var options = new List<(WeaponInstance, Node)>();
-        foreach (WeaponInstance weapon in attacker.inventory.items.OfType<WeaponInstance>())
+        foreach (WeaponInstance weapon in attacker.UsableWeapons)
         {
             var (tile, _) = BestTileForWeapon(attacker, target, weapon, reachable);
             if (tile != null) options.Add((weapon, tile));
@@ -36,7 +36,7 @@ public static class AttackPlanner
         int bestScore = int.MinValue;
         WeaponInstance bestWeapon = null;
         Node bestTile = null;
-        foreach (WeaponInstance weapon in attacker.inventory.items.OfType<WeaponInstance>())
+        foreach (WeaponInstance weapon in attacker.UsableWeapons)
         {
             var (tile, score) = BestTileForWeapon(attacker, target, weapon, reachable);
             if (tile != null && score > bestScore) { bestScore = score; bestWeapon = weapon; bestTile = tile; }

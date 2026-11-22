@@ -45,7 +45,8 @@ public class InventoryMenu : MonoBehaviour
         foreach (ItemInstance item in pendingUnit.inventory.items)
         {
             GameObject row = Instantiate(itemRowPrefab, itemListParent);
-            row.GetComponent<InventoryItemRow>().Setup(item);
+            bool usable = !(item is WeaponInstance weapon) || pendingUnit.CanUse(weapon.WeaponData);
+            row.GetComponent<InventoryItemRow>().Setup(item, usable);
         }
 
         menuPanel.SetActive(true);
@@ -59,10 +60,10 @@ public class InventoryMenu : MonoBehaviour
 
         bool isWeapon = item is WeaponInstance;
         bool isConsumable = item is ConsumableInstance;
-        bool isEquipped = pendingUnit.inventory.items.IndexOf(item) == 0;
+        bool isEquipped = item == pendingUnit.EquippedWeapon;
 
         equipButton.gameObject.SetActive(isWeapon);
-        if (isWeapon) equipButton.interactable = !isEquipped;
+        if (isWeapon) equipButton.interactable = !isEquipped && pendingUnit.CanUse(((WeaponInstance)item).WeaponData);
 
         useButton.gameObject.SetActive(isConsumable);
 
