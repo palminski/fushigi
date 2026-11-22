@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Bad Guy
   m_EditorClassIdentifier: Assembly-CSharp::Speaker
   displayName: Bad Guy
-  portrait: {fileID: -274714914, guid: 389be3483ef26ae4886e2b0a97fdaff1, type: 3}
+  portrait: {fileID: 21300000, guid: 8e568cf494a7c674886c463f44823546, type: 3}

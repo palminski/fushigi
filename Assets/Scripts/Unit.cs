@@ -3,6 +3,7 @@ using UnityEngine;
 
 public abstract class Unit : MapObject
 {
+    public Character character;
     protected SpriteRenderer spriteRenderer;
     protected Color baseColor;
     public UnitAttributes unitAttributes;
@@ -23,6 +24,18 @@ public abstract class Unit : MapObject
 
     protected virtual void Awake()
     {
+        if (character.bases.health > unitAttributes.health) unitAttributes.health = character.bases.health;
+        if (character.bases.strength > unitAttributes.strength) unitAttributes.strength = character.bases.strength;
+        if (character.bases.skill > unitAttributes.skill) unitAttributes.skill = character.bases.skill;
+        if (character.bases.speed > unitAttributes.speed) unitAttributes.speed = character.bases.speed;
+        if (character.bases.defence > unitAttributes.defence) unitAttributes.defence = character.bases.defence;
+        if (character.bases.build > unitAttributes.build) unitAttributes.build = character.bases.build;
+        if (character.bases.magic > unitAttributes.magic) unitAttributes.magic = character.bases.magic;
+        if (character.bases.movement > unitAttributes.movement) unitAttributes.movement = character.bases.movement;
+
+        unitAttributes.movement += character.characterClass.statModifiers.movement;
+
+
         unitAttributes.currentHealth = unitAttributes.health;
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;

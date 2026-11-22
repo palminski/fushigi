@@ -2872,6 +2872,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -2881,7 +2882,7 @@ MonoBehaviour:
     defence: 1
     build: 4
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -12281,6 +12282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -12290,7 +12292,7 @@ MonoBehaviour:
     defence: 1
     build: 4
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -12537,7 +12539,7 @@ GameObject:
   - component: {fileID: 839472957}
   - component: {fileID: 839472956}
   m_Layer: 0
-  m_Name: Tanya
+  m_Name: Emily
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12555,16 +12557,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a981f15f362de544dafc836d5bd736e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 0d2f10841164f3bf782f8ab40ee4b23d, type: 2}
   unitAttributes:
     currentHealth: 0
-    health: 10
+    health: 1
     strength: 1
     skill: 1
-    speed: 6
+    speed: 1
     defence: 1
-    build: 4
+    build: 1
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 839472958}
@@ -13268,6 +13271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -13277,7 +13281,7 @@ MonoBehaviour:
     defence: 1
     build: 4
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -13405,6 +13409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -13414,7 +13419,7 @@ MonoBehaviour:
     defence: 1
     build: 3
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -13595,6 +13600,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -13604,7 +13610,7 @@ MonoBehaviour:
     defence: 1
     build: 4
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -13786,6 +13792,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -13795,7 +13802,7 @@ MonoBehaviour:
     defence: 1
     build: 3
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -32049,6 +32056,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -32058,7 +32066,7 @@ MonoBehaviour:
     defence: 1
     build: 4
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -32359,16 +32367,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a981f15f362de544dafc836d5bd736e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 3ef23dfdee62a5c16a51aaa077a37b9c, type: 2}
   unitAttributes:
     currentHealth: 0
-    health: 100
+    health: 1
     strength: 1
     skill: 1
-    speed: 6
+    speed: 1
     defence: 1
-    build: 5
+    build: 1
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 1557982980}
@@ -32434,6 +32443,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -32443,7 +32453,7 @@ MonoBehaviour:
     defence: 1
     build: 3
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}
@@ -32592,7 +32602,7 @@ GameObject:
   - component: {fileID: 1621375040}
   - component: {fileID: 1621375039}
   m_Layer: 0
-  m_Name: Wil
+  m_Name: Gil
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32610,16 +32620,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a981f15f362de544dafc836d5bd736e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 25e920379b87264cd83f2ac3e1d80926, type: 2}
   unitAttributes:
     currentHealth: 0
-    health: 10
+    health: 1
     strength: 1
     skill: 1
-    speed: 6
+    speed: 1
     defence: 1
-    build: 4
+    build: 1
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 1621375041}
@@ -32785,7 +32796,7 @@ GameObject:
   - component: {fileID: 1697729113}
   - component: {fileID: 1697729112}
   m_Layer: 0
-  m_Name: Clone
+  m_Name: Sumin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32803,16 +32814,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a981f15f362de544dafc836d5bd736e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: b1473a52c2d96ba58872d4b1591cb6bc, type: 2}
   unitAttributes:
     currentHealth: 0
-    health: 100
+    health: 1
     strength: 1
     skill: 1
-    speed: 6
+    speed: 1
     defence: 1
-    build: 5
+    build: 1
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 1697729114}
@@ -33499,6 +33511,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff1621126c378941a76e88a4e208094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
     currentHealth: 0
     health: 10
@@ -33508,7 +33521,7 @@ MonoBehaviour:
     defence: 1
     build: 3
     magic: 1
-    movement: 8
+    movement: 0
     movementClass: 0
   canAct: 1
   mover: {fileID: 0}

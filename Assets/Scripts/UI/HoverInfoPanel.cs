@@ -10,6 +10,7 @@ public class HoverInfoPanel : MonoBehaviour
 
     [Header("Unit Info")]
     [SerializeField] private Image unitSection;
+    [SerializeField] private Image unitImage;
     [SerializeField] private TMP_Text unitNameText;
     [SerializeField] private TMP_Text unitHpText;
     [SerializeField] private TMP_Text unitStatsText;
@@ -41,7 +42,8 @@ public class HoverInfoPanel : MonoBehaviour
             unitSection.color = playerColor;
         }
         var a = unit.unitAttributes;
-        unitNameText.text = unit.gameObject.name;
+        unitNameText.text = unit.character != null ? unit.character.characterName : unit.gameObject.name;
+        unitImage.sprite = unit.character != null ? unit.character.portrait : null;
         unitHpText.text = $"HP  {a.currentHealth} / {a.health}";
         unitStatsText.text = $"Str {a.strength}\nSpd {a.speed}\nDef {a.defence}\nMag {a.magic}\nMov {a.movement}\nBld {a.build}";
         unitItemsText.text = BuildItemsText(unit.inventory);

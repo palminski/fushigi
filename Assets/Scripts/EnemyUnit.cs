@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class EnemyUnit : Unit
 {
-
     private Unit plannedTarget;
     private WeaponInstance plannedWeapon;
     // Update is called once per frame

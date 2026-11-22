@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1637b54b4d42a6324b7eae58d9db216e, type: 3}
+  m_Name: Sumin
+  m_EditorClassIdentifier: Assembly-CSharp::Character
+  characterName: Sumin
+  portrait: {fileID: 21300000, guid: 0fe40bfdac135d0448bf50a3e691c91d, type: 3}
+  characterClass: {fileID: 11400000, guid: bb4a5d97665ebe488904de5fb59a0df5, type: 2}
+  growths:
+    health: 70
+    strength: 35
+    skill: 35
+    speed: 35
+    defence: 40
+    build: 25
+    magic: 15
+    movement: 3
+  bases:
+    health: 22
+    strength: 4
+    skill: 2
+    speed: 5
+    defence: 3
+    build: 5
+    magic: 4
+    movement: 0
+  skills: []
+  color: {r: 0, g: 0, b: 0, a: 0}

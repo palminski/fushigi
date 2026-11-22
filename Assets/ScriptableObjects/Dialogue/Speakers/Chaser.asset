@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Chaser
   m_EditorClassIdentifier: Assembly-CSharp::Speaker
   displayName: Chaser
-  portrait: {fileID: 21300000, guid: f20a0c00adba3414c9fd9f20ba7831ba, type: 3}
+  portrait: {fileID: 21300000, guid: 175ba57add0002442a224244795c3673, type: 3}
