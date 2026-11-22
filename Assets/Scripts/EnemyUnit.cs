@@ -51,9 +51,8 @@ public class EnemyUnit : Unit
                 Vector3Int playerPos = playerUnit.GridPosition;
                 int distance = Mathf.Abs(nodePos.x - playerPos.x) + Mathf.Abs(nodePos.y - playerPos.y);
 
-                foreach (ItemInstance item in inventory.items)
+                foreach (WeaponInstance weapon in UsableWeapons)
                 {
-                    if (item is not WeaponInstance weapon) continue;
                     if (distance < weapon.minRange || distance > weapon.maxRange) continue;
 
                     CombatPreview preview = CombatCalculator.Preview(this, playerUnit, weapon, reachableNode.gridPosition);
