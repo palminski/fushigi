@@ -5,6 +5,8 @@ using UnityEngine;
 [System.Serializable]
 public class UnitAttributes
 {
+    public int level = 1;
+    public int currentExp = 0;
     public int currentHealth;
     [Space(10)]
     public int health = 1;

@@ -2874,6 +2874,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -12284,6 +12286,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -12559,6 +12563,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 0d2f10841164f3bf782f8ab40ee4b23d, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 1
     strength: 1
@@ -13272,6 +13278,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -13410,6 +13418,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -13601,6 +13611,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -13793,6 +13805,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -32057,6 +32071,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1889b9f1b47184969a4bc16fd1e64f1, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -32368,6 +32384,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 3ef23dfdee62a5c16a51aaa077a37b9c, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 1
     strength: 1
@@ -32444,6 +32462,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1
@@ -32621,6 +32641,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 25e920379b87264cd83f2ac3e1d80926, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 1
     strength: 1
@@ -32815,6 +32837,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: b1473a52c2d96ba58872d4b1591cb6bc, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 1
     strength: 1
@@ -33512,6 +33536,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 8fe8f089613c5fb03a39bda2d1e398b2, type: 2}
   unitAttributes:
+    level: 1
+    currentExp: 0
     currentHealth: 0
     health: 10
     strength: 1

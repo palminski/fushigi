@@ -184,4 +184,24 @@ public static class CombatCalculator
             attacker.unitAttributes.skill = origSkill;
         }
     }
+
+    public static int CalculateExp(Unit playerUnit, Unit enemyUnit, bool enemyWasKilled)
+    {
+        int expToAdd = 0;
+        int playerLevel = playerUnit.unitAttributes.level;
+        int enemyLevel = enemyUnit.unitAttributes.level;
+
+        int levelDifference =  enemyLevel - playerLevel;
+
+        expToAdd = 10 + levelDifference;
+        if(enemyWasKilled) expToAdd += (30 + levelDifference);
+
+
+        expToAdd = Mathf.Clamp(expToAdd,1,enemyWasKilled ? 100 : 20);
+
+        
+
+
+        return expToAdd;
+    }
 }

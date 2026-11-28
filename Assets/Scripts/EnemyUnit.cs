@@ -28,7 +28,7 @@ public class EnemyUnit : Unit
     public IEnumerator PerformTurnActionCoroutine()
     {
         if (plannedTarget == null || plannedWeapon == null) yield break;
-        yield return StartCoroutine(AttackCoroutine(plannedTarget, plannedWeapon));
+        yield return AttackCoroutine(plannedTarget, plannedWeapon);
     }
 
     private Node FindTargetTile()
@@ -111,5 +111,6 @@ public class EnemyUnit : Unit
         for (int i = 0; i < result.defenderSwings; i++) defWeapon?.Use();
         if (result.totalDamageToAttacker > 0) TakeDamage(result.totalDamageToAttacker);
         for (int i = 0; i < result.attackerSwings; i++) weapon.Use();
+        yield return AfterCombat(this, target, result);
     }
 }

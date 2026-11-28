@@ -11,6 +11,7 @@ public class Character : ScriptableObject
 
     public StatBlock growths;
     public StatBlock bases;
+    public int baseLevel = 1;
     public List<Skill> skills;
     
     public Color color; //Will be used late MAYBE

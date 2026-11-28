@@ -45,10 +45,11 @@ public class HoverInfoPanel : MonoBehaviour
         }
         var a = unit.unitAttributes;
         unitNameText.text = unit.character != null ? unit.character.characterName : unit.gameObject.name;
-        unitClassText.text = unit.character != null ? (unit.character.characterClass != null ? unit.character.characterClass.name : "Unknown") : "Unknown";
+        string unitClass = unit.character != null ? (unit.character.characterClass != null ? unit.character.characterClass.name : "Unknown") : "Unknown";
+        unitClassText.text = $"{unitClass} - lv.{unit.unitAttributes.level}";
         unitImage.sprite = unit.character != null ? unit.character.portrait : null;
         unitHpText.text = $"HP  {a.currentHealth} / {a.health}";
-        unitStatsText.text = $"Str {a.strength}\nSpd {a.speed}\nDef {a.defence}\nMag {a.magic}\nMov {a.movement}\nBld {a.build}";
+        unitStatsText.text = $"Str {a.strength}\nSpd {a.speed}\nDef {a.defence}\nMag {a.magic}\nMov {a.movement}\nBld {a.build}\nexp {a.currentExp}";
         unitItemsText.text = BuildItemsText(unit);
         unitSection.gameObject.SetActive(true);
         terrainSection.gameObject.SetActive(false);

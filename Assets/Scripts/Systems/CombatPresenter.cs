@@ -15,6 +15,10 @@ public class CombatPresenter : MonoBehaviour
     [SerializeField]private MapCombatAnimation mapAnimationPrefab;
     [SerializeField]private CombatAnimationMode animationMode = CombatAnimationMode.Full;
 
+    [SerializeField]private ExpScreen expScreenPrefab;
+    [SerializeField]private LevelUpScreen levelUpScreenPrefab;
+
+
     void Awake()
     {
         if(Instance != null && Instance != this)
@@ -40,5 +44,15 @@ public class CombatPresenter : MonoBehaviour
             case CombatAnimationMode.None:
             break;
         }
+    }
+
+    public IEnumerator PresentExp(PlayerUnit playerUnit, int beforeExp, int gainedExp)
+    {
+        yield return ScreenManager.Instance.OpenAndWait(expScreenPrefab, screen => screen.Show(playerUnit, beforeExp, gainedExp));
+    }
+
+    public IEnumerator PresentLevelUp(PlayerUnit playerUnit, StatBlock statBlock)
+    {
+        yield return ScreenManager.Instance.OpenAndWait(levelUpScreenPrefab, screen => screen.Show(playerUnit, statBlock));
     }
 }
